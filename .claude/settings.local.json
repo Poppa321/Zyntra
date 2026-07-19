@@ -7,7 +7,10 @@
       "PowerShell(npx expo install expo-linear-gradient)",
       "PowerShell(bunx tsc --noEmit 2>&1)",
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git config *)"
     ]
   },
   "hooks": {
