@@ -1,0 +1,65 @@
+import { Tabs } from "expo-router";
+import { ClipboardText, Compass, House, User } from "phosphor-react-native";
+
+import { colors } from "@/theme/colors";
+import { fonts } from "@/theme/typography";
+
+export default function DistributorTabsLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.navy,
+        tabBarInactiveTintColor: colors.textPlaceholder,
+        tabBarStyle: {
+          backgroundColor: colors.cardBg,
+          borderTopColor: colors.border,
+          height: 84,
+          paddingTop: 12,
+        },
+        tabBarLabelStyle: {
+          fontFamily: fonts.semiBold,
+          fontSize: 11,
+          marginTop: 2,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ focused, color }) => (
+            <House size={22} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="browse"
+        options={{
+          title: "Browse",
+          tabBarIcon: ({ focused, color }) => (
+            <Compass size={22} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: "Orders",
+          tabBarIcon: ({ focused, color }) => (
+            <ClipboardText size={22} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ focused, color }) => (
+            <User size={22} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
+}
