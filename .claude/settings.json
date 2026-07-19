@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Start-Process -FilePath \"bunx\" -ArgumentList \"expo start --web --port 8081\" -RedirectStandardOutput \"expo-web.log\" -RedirectStandardError \"expo-web-err.log\" -NoNewWindow -PassThru)",
+      "PowerShell(bunx --bun playwright install chromium --with-deps 2>&1)",
+      "mcp__figma__get_metadata"
+    ]
+  },
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  }
+}

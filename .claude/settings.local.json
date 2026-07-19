@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__figma__get_design_context",
+      "PowerShell(npx expo install react-native-svg)",
+      "PowerShell(npx expo install @expo-google-fonts/inter expo-font)",
+      "PowerShell(npx expo install expo-linear-gradient)",
+      "PowerShell(bunx tsc --noEmit 2>&1)",
+      "Skill(run)",
+      "Skill(run:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Impeccable design detector: runs after Edit/Write/MultiEdit on UI files and surfaces findings as system reminders."
+}
