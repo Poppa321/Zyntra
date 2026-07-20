@@ -1,32 +1,87 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CaretLeft, Check, Phone, User } from "phosphor-react-native";
+import { CaretLeft, ChatCircleText, Check, XCircle } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { confirmAlert, showAlert } from "@/lib/alert";
+import type { OrderStatusDto } from "@/api/types";
+import { Button } from "@/components/Button";
 import { IconButton } from "@/components/IconButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TrackingMap } from "@/components/TrackingMap";
-import { useOrderTrackingQuery } from "@/hooks/useOrders";
+import { useSessionQuery } from "@/hooks/useAuth";
+import { useStartConversationMutation } from "@/hooks/useChat";
+import { useCancelOrderMutation, useOrderQuery } from "@/hooks/useOrders";
+import { usePayForOrderMutation } from "@/hooks/usePayments";
 import { colors } from "@/theme/colors";
 import { radius } from "@/theme/spacing";
 
-const FALLBACK_STEPS = [
-  { key: "packed", label: "Packed", status: "done" as const },
-  { key: "shipped", label: "Shipped", status: "done" as const },
-  { key: "transit", label: "In Transit", status: "current" as const },
-  { key: "delivered", label: "Delivered", status: "pending" as const },
-];
+const HAPPY_PATH: OrderStatusDto[] = ["PENDING", "ACCEPTED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
+const STEP_LABEL: Record<OrderStatusDto, string> = {
+  PENDING: "Order Placed",
+  ACCEPTED: "Accepted",
+  IN_TRANSIT: "Shipped",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  DELIVERED: "Delivered",
+  DECLINED: "Declined",
+  CANCELLED: "Cancelled",
+};
 
 export default function OrderTracking() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data } = useOrderTrackingQuery(id);
+  const { data, refetch } = useOrderQuery(id);
+  const { data: user } = useSessionQuery();
+  const payForOrder = usePayForOrderMutation();
+  const cancelOrder = useCancelOrderMutation();
+  const startConversation = useStartConversationMutation();
 
-  const steps = data?.steps ?? FALLBACK_STEPS;
-  const courierName = data?.courierName ?? "Yaw Boateng";
-  const courierVehicle = data?.courierVehicle ?? "GT-4521-22";
-  const courierHub = data?.courierHub ?? "Kumasi hub";
-  const estimatedDelivery = data?.estimatedDelivery ?? "Tomorrow · 2:00 PM";
+  const order = data?.order;
+  const isDistributor = !!order && user?.id === order.distributorId;
+  const counterpartyId = !order ? undefined : isDistributor ? order.manufacturerId : order.distributorId;
+  const counterpartyName = !order
+    ? ""
+    : (isDistributor ? order.manufacturerBusinessName : order.distributorBusinessName) ?? "counterparty";
+  const canCancel = !!order && isDistributor && order.status === "PENDING";
+
+  function handleMessageCounterparty() {
+    if (!counterpartyId) return;
+    startConversation.mutate(counterpartyId, {
+      onSuccess: (conversation) => router.push(`/chat/${conversation.id}`),
+      onError: (error) => showAlert("Couldn't open chat", getApiErrorMessage(error)),
+    });
+  }
+
+  function handleCancel() {
+    if (!order) return;
+    confirmAlert("Cancel order", `Are you sure you want to cancel order #${order.orderNumber}?`, "Cancel order", () =>
+      cancelOrder.mutate(order.id, {
+        onSuccess: () => refetch(),
+        onError: (error) => showAlert("Couldn't cancel order", getApiErrorMessage(error)),
+      }),
+    );
+  }
+  const isTerminatedEarly = order?.status === "DECLINED" || order?.status === "CANCELLED";
+  const currentIndex = order ? HAPPY_PATH.indexOf(order.status) : -1;
+
+  const steps = isTerminatedEarly
+    ? [{ key: order!.status, label: STEP_LABEL[order!.status], status: "current" as const }]
+    : HAPPY_PATH.map((status, index) => ({
+        key: status,
+        label: STEP_LABEL[status],
+        status: index < currentIndex ? "done" as const : index === currentIndex ? "current" as const : "pending" as const,
+      }));
+
+  const canPay = order?.status === "PENDING" && order.paymentStatus !== "SUCCESS";
+
+  function handlePay() {
+    if (!order) return;
+    payForOrder.mutate(order.id, {
+      onSuccess: () => refetch(),
+      onError: (error) => showAlert("Payment failed", getApiErrorMessage(error)),
+    });
+  }
 
   return (
     <ScreenContainer background={colors.white} edges={["top"]}>
@@ -46,12 +101,7 @@ export default function OrderTracking() {
             <View key={step.key} style={styles.stepColumn}>
               <View style={styles.stepRow}>
                 {index > 0 && (
-                  <View
-                    style={[
-                      styles.stepLine,
-                      step.status !== "pending" && styles.stepLineActive,
-                    ]}
-                  />
+                  <View style={[styles.stepLine, step.status !== "pending" && styles.stepLineActive]} />
                 )}
                 <View
                   style={[
@@ -63,20 +113,12 @@ export default function OrderTracking() {
                   {step.status === "done" && <Check size={12} color={colors.navy} weight="bold" />}
                 </View>
                 {index < steps.length - 1 && (
-                  <View
-                    style={[
-                      styles.stepLine,
-                      step.status === "done" && styles.stepLineActive,
-                    ]}
-                  />
+                  <View style={[styles.stepLine, step.status === "done" && styles.stepLineActive]} />
                 )}
               </View>
               <Text
                 weight={step.status === "current" ? "bold" : "medium"}
-                style={[
-                  styles.stepLabel,
-                  { color: step.status === "current" ? colors.textPrimary : colors.textSecondary },
-                ]}
+                style={[styles.stepLabel, { color: step.status === "current" ? colors.textPrimary : colors.textSecondary }]}
               >
                 {step.label}
               </Text>
@@ -84,40 +126,91 @@ export default function OrderTracking() {
           ))}
         </View>
 
-        <TrackingMap />
+        {!isTerminatedEarly && <TrackingMap />}
 
-        <View style={styles.driverCard}>
-          <View style={styles.driverAvatar}>
-            <User size={22} color={colors.textFaint} weight="fill" />
-          </View>
-          <View style={styles.driverInfo}>
-            <Text weight="bold" style={styles.driverName}>
-              {courierName}
+        {order && (
+          <View style={styles.itemsCard}>
+            <Text weight="bold" style={styles.itemsTitle}>
+              {order.manufacturerBusinessName ?? order.distributorBusinessName}
             </Text>
-            <Text weight="regular" style={styles.driverMeta}>
-              {courierVehicle} · {courierHub}
-            </Text>
+            {data.items.map((item) => (
+              <View key={item.id} style={styles.itemRow}>
+                <Text weight="medium" style={styles.itemName} numberOfLines={1}>
+                  {item.quantity}× {item.productName}
+                </Text>
+                <Text weight="semiBold" style={styles.itemTotal}>
+                  ₵{item.lineTotal.toLocaleString()}
+                </Text>
+              </View>
+            ))}
           </View>
-          <IconButton
-            icon={<Phone size={18} color={colors.white} weight="fill" />}
-            background={colors.navy}
-            size={44}
+        )}
+
+        {canPay && (
+          <Button
+            label={payForOrder.isPending ? "Opening Paystack…" : "Pay Now"}
+            onPress={handlePay}
+            loading={payForOrder.isPending}
+            style={styles.payButton}
           />
-        </View>
+        )}
+
+        {order && (
+          <View style={styles.actionsRow}>
+            <Pressable
+              onPress={handleMessageCounterparty}
+              style={({ pressed }) => [styles.actionButton, pressed && styles.actionPressed]}
+            >
+              <ChatCircleText size={15} color={colors.navy} weight="fill" />
+              <Text weight="semiBold" color={colors.navy} style={styles.actionLabel}>
+                {startConversation.isPending ? "Opening…" : `Message ${counterpartyName}`}
+              </Text>
+            </Pressable>
+            {canCancel && (
+              <Pressable
+                onPress={handleCancel}
+                style={({ pressed }) => [styles.actionButton, styles.cancelButton, pressed && styles.actionPressed]}
+              >
+                <XCircle size={15} color={colors.error} weight="fill" />
+                <Text weight="semiBold" color={colors.error} style={styles.actionLabel}>
+                  Cancel order
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
 
         <View style={styles.etaCard}>
           <View>
             <Text weight="extraBold" color={colors.textMuted} style={styles.etaLabel}>
-              ESTIMATED DELIVERY
+              {order?.eta ? "ESTIMATED DELIVERY" : "STATUS"}
             </Text>
             <Text weight="extraBold" color={colors.gold} style={styles.etaValue}>
-              {estimatedDelivery}
+              {order?.eta ? new Date(order.eta).toLocaleString() : order ? STEP_LABEL[order.status] : "—"}
             </Text>
           </View>
           <Text weight="semiBold" style={styles.etaOrderId}>
-            #{id}
+            #{order?.orderNumber ?? id}
           </Text>
         </View>
+
+        {data?.statusHistory && data.statusHistory.length > 0 && (
+          <View style={styles.historyCard}>
+            <Text weight="bold" style={styles.itemsTitle}>
+              History
+            </Text>
+            {data.statusHistory.map((entry, index) => (
+              <View key={`${entry.status}-${index}`} style={styles.historyRow}>
+                <Text weight="semiBold" style={styles.historyStatus}>
+                  {STEP_LABEL[entry.status]}
+                </Text>
+                <Text weight="regular" color={colors.textMuted} style={styles.historyNote}>
+                  {entry.note ?? ""} · {new Date(entry.createdAt).toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </ScreenContainer>
   );
@@ -125,14 +218,14 @@ export default function OrderTracking() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   title: {
-    marginTop: 24,
-    fontSize: 30,
-    lineHeight: 36,
+    marginTop: 18,
+    fontSize: 26,
+    lineHeight: 32,
     color: colors.textPrimary,
   },
   stepper: {
@@ -177,54 +270,98 @@ const styles = StyleSheet.create({
   stepLabel: {
     marginTop: 10,
     fontSize: 11,
+    textAlign: "center",
   },
-  driverCard: {
-    marginTop: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
+  itemsCard: {
+    marginTop: 18,
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 12,
+    gap: 10,
   },
-  driverAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  driverInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  driverName: {
-    fontSize: 15,
+  itemsTitle: {
+    fontSize: 14,
     color: colors.textPrimary,
   },
-  driverMeta: {
+  itemRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  itemName: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textPrimary,
+    marginRight: 12,
+  },
+  itemTotal: {
     fontSize: 12,
     color: colors.textPrimary,
   },
+  payButton: {
+    marginTop: 12,
+  },
+  actionsRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 38,
+    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: colors.navy,
+    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+  },
+  cancelButton: {
+    borderColor: colors.error,
+  },
+  actionPressed: {
+    opacity: 0.75,
+  },
+  actionLabel: {
+    fontSize: 12,
+  },
   etaCard: {
-    marginTop: 16,
+    marginTop: 12,
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 20,
+    padding: 16,
   },
   etaLabel: {
     fontSize: 11,
   },
   etaValue: {
     marginTop: 6,
-    fontSize: 22,
+    fontSize: 16,
   },
   etaOrderId: {
+    fontSize: 11,
+    color: colors.textPrimary,
+  },
+  historyCard: {
+    marginTop: 12,
+    backgroundColor: colors.cardBg,
+    borderRadius: radius.sm,
+    padding: 12,
+    gap: 10,
+  },
+  historyRow: {
+    gap: 2,
+  },
+  historyStatus: {
     fontSize: 12,
     color: colors.textPrimary,
+  },
+  historyNote: {
+    fontSize: 11,
   },
 });

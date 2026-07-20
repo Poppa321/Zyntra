@@ -1,11 +1,15 @@
 import { StyleSheet, View } from "react-native";
 
-import type { OrderStatus } from "@/data/sampleData";
+import type { OrderStatus } from "@/types/domain";
 
 const STATUS_COLOR: Record<OrderStatus, string> = {
+  Pending: "#4073cc",
+  Accepted: "#4073cc",
   "In Transit": "#eaaa34",
-  Processing: "#4073cc",
+  "Out for Delivery": "#eaaa34",
   Delivered: "#26994d",
+  Declined: "#d94033",
+  Cancelled: "#d94033",
 };
 
 export function StatusDot({ status }: { status: OrderStatus }) {

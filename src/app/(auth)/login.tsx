@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
-import { Divider } from "@/components/Divider";
-import { GoogleIcon } from "@/components/GoogleIcon";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useLoginMutation } from "@/hooks/useAuth";
@@ -34,7 +32,7 @@ export default function Login() {
   };
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to continue trading">
+    <AuthShell title="Welcome back" subtitle="Sign in to continue trading" showBack>
       <TextField
         label="Email address"
         placeholder="you@company.com"
@@ -67,18 +65,6 @@ export default function Login() {
         disabled={!canSubmit}
       />
 
-      <Divider label="or continue with" />
-
-      <Button
-        label="Continue with Google"
-        variant="outline"
-        icon={<GoogleIcon size={18} />}
-        iconPosition="start"
-        onPress={() =>
-          Alert.alert("Google sign-in coming soon", "For now, sign in with your email and password.")
-        }
-      />
-
       <View style={styles.footer}>
         <Text weight="medium" color={colors.textSecondary} style={styles.footerText}>
           Don&apos;t have an account?{" "}
@@ -104,7 +90,7 @@ const styles = StyleSheet.create({
     marginTop: -8,
   },
   forgotText: {
-    fontSize: 13,
+    fontSize: 12,
   },
   footer: {
     flexDirection: "row",
@@ -112,6 +98,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

@@ -29,8 +29,8 @@ export function Chip({ label, active, onPress }: ChipProps) {
 
 const styles = StyleSheet.create({
   base: {
-    height: 38,
-    paddingHorizontal: 16,
+    height: 34,
+    paddingHorizontal: 12,
     borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
   },
 });

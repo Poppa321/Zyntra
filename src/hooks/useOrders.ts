@@ -1,122 +1,119 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  acceptOrder,
-  declineOrder,
-  getOrderTracking,
-  listDistributorOrders,
-  listIncomingOrders,
-  markOrderShipped,
-  placeOrder,
-  type OrderTab,
-} from "@/api/endpoints/orders";
+import * as ordersApi from "@/api/endpoints/orders";
 import { mapDistributorOrder, mapIncomingOrder } from "@/api/mappers";
-import { formatCurrency } from "@/lib/format";
-import {
-  distributorOrders as sampleDistributorOrders,
-  incomingOrders as sampleIncomingOrders,
-  type CartItem,
-  type IncomingOrder,
-  type Order,
-} from "@/data/sampleData";
+import type { CreateOrderRequest, OrderGroup } from "@/api/types";
+import type { CartItem } from "@/types/domain";
+import { clearCart } from "@/hooks/useCart";
+import { queryClient as globalQueryClient } from "@/lib/queryClient";
 
-const INCOMING_ORDERS_KEY = ["incoming-orders"];
-const CART_QUERY_KEY = ["cart"];
-const ACTIVE_ORDERS_KEY = ["distributor-orders", "active"];
+const GROUP_TO_TAB: Record<OrderGroup, OrderGroup> = { active: "active", completed: "completed", cancelled: "cancelled" };
 
-export function useDistributorOrdersQuery(tab: OrderTab) {
+export function useDistributorOrdersQuery(group: OrderGroup) {
   const query = useQuery({
-    queryKey: ["distributor-orders", tab],
-    queryFn: () => listDistributorOrders(tab).then((list) => list.map(mapDistributorOrder)),
-  });
-
-  return { ...query, data: query.data ?? sampleDistributorOrders };
-}
-
-export function useIncomingOrdersQuery() {
-  const query = useQuery({
-    queryKey: INCOMING_ORDERS_KEY,
-    queryFn: () => listIncomingOrders().then((list) => list.map(mapIncomingOrder)),
-    initialData: sampleIncomingOrders,
-    staleTime: Infinity,
+    queryKey: ["orders", "distributor", group],
+    queryFn: () => ordersApi.listOrders(GROUP_TO_TAB[group]).then((page) => page.content.map(mapDistributorOrder)),
   });
 
   return { ...query, data: query.data ?? [] };
 }
 
-export function useOrderTrackingQuery(orderId: string | undefined) {
+export function useIncomingOrdersQuery(group: OrderGroup = "active") {
+  const query = useQuery({
+    queryKey: ["orders", "incoming", group],
+    queryFn: () => ordersApi.listOrders(group).then((page) => page.content.map(mapIncomingOrder)),
+  });
+
+  return { ...query, data: query.data ?? [] };
+}
+
+export function useOrderQuery(orderId: string | undefined) {
   return useQuery({
-    queryKey: ["order-tracking", orderId],
-    queryFn: () => getOrderTracking(orderId as string),
+    queryKey: ["order", orderId],
+    queryFn: () => ordersApi.getOrder(orderId as string),
     enabled: !!orderId,
   });
 }
 
-function updateIncomingOrders(
-  queryClient: ReturnType<typeof useQueryClient>,
-  updater: (orders: IncomingOrder[]) => IncomingOrder[],
-) {
-  queryClient.setQueryData<IncomingOrder[]>(INCOMING_ORDERS_KEY, (current) => updater(current ?? []));
+function invalidateOrders(queryClient: ReturnType<typeof useQueryClient>, orderId?: string) {
+  queryClient.invalidateQueries({ queryKey: ["orders"] });
+  if (orderId) queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+}
+
+/** Groups cart items by manufacturer and places one order per manufacturer (the backend requires all items in an order to share one manufacturer). */
+export function usePlaceOrderMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ items, deliveryAddress }: { items: CartItem[]; deliveryAddress?: string }) => {
+      const byManufacturer = new Map<string, CartItem[]>();
+      for (const item of items) {
+        const list = byManufacturer.get(item.product.manufacturerId) ?? [];
+        list.push(item);
+        byManufacturer.set(item.product.manufacturerId, list);
+      }
+
+      const results = [];
+      for (const [manufacturerId, group] of byManufacturer) {
+        const payload: CreateOrderRequest = {
+          manufacturerId,
+          deliveryAddress,
+          items: group.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
+        };
+        results.push(await ordersApi.createOrder(payload));
+      }
+      return results;
+    },
+    onSuccess: () => {
+      clearCart(globalQueryClient);
+      invalidateOrders(queryClient);
+    },
+  });
 }
 
 export function useAcceptOrderMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (orderId: string) => {
-      updateIncomingOrders(queryClient, (orders) =>
-        orders.map((order) => (order.id === orderId ? { ...order, status: "shipped" } : order)),
-      );
-      return acceptOrder(orderId).catch(() => null);
-    },
+    mutationFn: (orderId: string) => ordersApi.acceptOrder(orderId),
+    onSuccess: (_data, orderId) => invalidateOrders(queryClient, orderId),
   });
 }
 
 export function useDeclineOrderMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (orderId: string) => {
-      updateIncomingOrders(queryClient, (orders) => orders.filter((order) => order.id !== orderId));
-      return declineOrder(orderId).catch(() => null);
-    },
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) => ordersApi.declineOrder(orderId, reason),
+    onSuccess: (_data, { orderId }) => invalidateOrders(queryClient, orderId),
   });
 }
 
-function summarizeCart(items: CartItem[]): string {
-  if (items.length === 0) return "";
-  const manufacturers = new Set(items.map((item) => item.product.manufacturer));
-  const itemLabel = `${items.length} item${items.length > 1 ? "s" : ""}`;
-  return manufacturers.size === 1 ? `${itemLabel} · ${[...manufacturers][0]}` : itemLabel;
-}
-
-export function usePlaceOrderMutation() {
+export function useShipOrderMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ items, total }: { items: CartItem[]; total: number }) => {
-      const orderId = await placeOrder("current")
-        .then((order) => order.orderNumber)
-        .catch(() => `ZYN-${Date.now().toString().slice(-5)}`);
-
-      queryClient.setQueryData<Order[]>(ACTIVE_ORDERS_KEY, (current) => [
-        {
-          id: `#${orderId}`,
-          itemsSummary: summarizeCart(items),
-          total: formatCurrency(total),
-          status: "Processing",
-        },
-        ...(current ?? sampleDistributorOrders),
-      ]);
-      queryClient.setQueryData(CART_QUERY_KEY, []);
-      return orderId;
-    },
+    mutationFn: (orderId: string) => ordersApi.shipOrder(orderId),
+    onSuccess: (_data, orderId) => invalidateOrders(queryClient, orderId),
   });
 }
 
-export function useMarkShippedMutation() {
+export function useOutForDeliveryMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (orderId: string) => {
-      updateIncomingOrders(queryClient, (orders) => orders.filter((order) => order.id !== orderId));
-      return markOrderShipped(orderId).catch(() => null);
-    },
+    mutationFn: (orderId: string) => ordersApi.outForDeliveryOrder(orderId),
+    onSuccess: (_data, orderId) => invalidateOrders(queryClient, orderId),
+  });
+}
+
+export function useDeliverOrderMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => ordersApi.deliverOrder(orderId),
+    onSuccess: (_data, orderId) => invalidateOrders(queryClient, orderId),
+  });
+}
+
+export function useCancelOrderMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => ordersApi.cancelOrder(orderId),
+    onSuccess: (_data, orderId) => invalidateOrders(queryClient, orderId),
   });
 }

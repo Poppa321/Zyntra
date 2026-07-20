@@ -5,7 +5,7 @@ import { colors } from "@/theme/colors";
 import { cardShadow, radius } from "@/theme/spacing";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Text } from "@/components/Text";
-import type { Product } from "@/data/sampleData";
+import type { Product } from "@/types/domain";
 
 type ProductCardProps = {
   product: Product;
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   manufacturer: {
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   price: {
     marginTop: 6,
-    fontSize: 15,
+    fontSize: 14,
   },
   moq: {
     marginTop: 6,

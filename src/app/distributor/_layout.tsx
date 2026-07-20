@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { ClipboardText, Compass, House, User } from "phosphor-react-native";
+import { ChatCircleText, ClipboardText, Compass, House, User } from "phosphor-react-native";
 
 import { colors } from "@/theme/colors";
 import { fonts } from "@/theme/typography";
@@ -48,6 +48,15 @@ export default function DistributorTabsLayout() {
           title: "Orders",
           tabBarIcon: ({ focused, color }) => (
             <ClipboardText size={22} color={color as string} weight={focused ? "fill" : "regular"} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Messages",
+          tabBarIcon: ({ focused, color }) => (
+            <ChatCircleText size={22} color={color as string} weight={focused ? "fill" : "regular"} />
           ),
         }}
       />

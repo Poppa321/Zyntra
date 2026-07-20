@@ -1,23 +1,24 @@
-import { formatCurrency, formatCurrencyPerUnit, formatQtyRange } from "@/lib/format";
+import { formatCurrency, formatCurrencyPerUnit, formatQtyRange, formatRelativeTime } from "@/lib/format";
 import type {
   AddressDto,
   AddressLabelDto,
-  BusinessProfileDto,
-  CartDto,
-  DashboardStatsDto,
-  InventoryItemDto,
+  ConversationDto,
+  MessageDto,
+  ManufacturerDashboardDto,
   NotificationDto,
   NotificationTypeDto,
   OrderDto,
   OrderStatusDto,
-  PaymentMethodDto,
-  ProductDto,
+  ProductCardDto,
+  ProductDetailDto,
+  UserDto,
 } from "@/api/types";
 import type {
   Address,
   AddressLabel,
   BusinessProfile,
-  CartItem,
+  Conversation,
+  ChatMessage,
   IncomingOrder,
   IncomingOrderStatus,
   InventoryItem,
@@ -25,87 +26,137 @@ import type {
   NotificationType,
   Order,
   OrderStatus,
-  PaymentMethod,
   PriceTier,
   Product,
-} from "@/data/sampleData";
+} from "@/types/domain";
 
-export function mapProduct(dto: ProductDto): Product {
-  const tiers: PriceTier[] = dto.priceTiers.map((tier) => ({
-    range: formatQtyRange(tier.minQty, tier.maxQty, dto.unit),
-    price: formatCurrencyPerUnit(tier.unitPrice, dto.unit),
-    best: tier.isBestValue,
-  }));
+// Backend has no ratings feature (out of scope) — used purely as a decorative default.
+const PLACEHOLDER_RATING = 4.8;
+
+export function mapProductCard(dto: ProductCardDto): Product {
+  return {
+    id: dto.id,
+    name: dto.name,
+    manufacturer: dto.manufacturerName,
+    manufacturerId: dto.manufacturerId,
+    category: "",
+    rating: PLACEHOLDER_RATING,
+    price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
+    unit: dto.unit,
+    moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
+    inStock: "",
+    leadTime: "",
+    basePrice: dto.baseUnitPrice,
+    baseQty: dto.moq,
+    tiers: [],
+  };
+}
+
+export function mapProductDetail(dto: ProductDetailDto): Product {
+  const tiers: PriceTier[] = dto.priceTiers
+    .slice()
+    .sort((a, b) => a.minQty - b.minQty)
+    .map((tier, index, sorted) => ({
+      range: formatQtyRange(tier.minQty, tier.maxQty, dto.unit),
+      price: formatCurrencyPerUnit(tier.unitPrice, dto.unit),
+      best: index === sorted.length - 1 && sorted.length > 1,
+      minQty: tier.minQty,
+      maxQty: tier.maxQty,
+      unitPrice: tier.unitPrice,
+    }));
 
   return {
     id: dto.id,
     name: dto.name,
     manufacturer: dto.manufacturerName,
+    manufacturerId: dto.manufacturerId,
     category: dto.category,
-    rating: dto.rating,
-    price: formatCurrencyPerUnit(dto.basePrice, dto.unit),
+    rating: PLACEHOLDER_RATING,
+    price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
     unit: dto.unit,
-    moq: `MOQ ${dto.minOrderQty.toLocaleString()} ${dto.unit}s`,
-    inStock: `In stock · ${dto.stockQuantity.toLocaleString()} ${dto.unit}s`,
-    leadTime: `Lead time ${dto.leadTime}`,
-    basePrice: dto.basePrice,
-    baseQty: dto.minOrderQty,
-    tiers: tiers.length > 0 ? tiers : [{ range: `${dto.minOrderQty}+ ${dto.unit}s`, price: formatCurrencyPerUnit(dto.basePrice, dto.unit) }],
+    moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
+    inStock: `In stock · ${dto.stockQty.toLocaleString()} ${dto.unit}s`,
+    leadTime: `Lead time ${dto.leadTimeDaysMin}–${dto.leadTimeDaysMax} days`,
+    basePrice: dto.baseUnitPrice,
+    baseQty: dto.moq,
+    tiers:
+      tiers.length > 0
+        ? tiers
+        : [{
+            range: `${dto.moq}+ ${dto.unit}s`,
+            price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
+            minQty: dto.moq,
+            maxQty: null,
+            unitPrice: dto.baseUnitPrice,
+          }],
   };
 }
 
-const DISTRIBUTOR_STATUS_MAP: Record<OrderStatusDto, OrderStatus> = {
-  PROCESSING: "Processing",
+const ORDER_STATUS_LABEL: Record<OrderStatusDto, OrderStatus> = {
+  PENDING: "Pending",
+  ACCEPTED: "Accepted",
   IN_TRANSIT: "In Transit",
+  OUT_FOR_DELIVERY: "Out for Delivery",
   DELIVERED: "Delivered",
-  CANCELLED: "Delivered",
-  NEW: "Processing",
-  SHIPPED: "In Transit",
+  DECLINED: "Declined",
+  CANCELLED: "Cancelled",
 };
+
+export function orderStatusLabel(status: OrderStatusDto): OrderStatus {
+  return ORDER_STATUS_LABEL[status];
+}
 
 export function mapDistributorOrder(dto: OrderDto): Order {
   return {
-    id: dto.orderNumber,
-    itemsSummary: dto.itemsSummary,
-    total: formatCurrency(dto.totalAmount),
-    status: DISTRIBUTOR_STATUS_MAP[dto.status] ?? "Processing",
+    id: `#${dto.orderNumber}`,
+    orderId: dto.id,
+    counterpartyId: dto.manufacturerId,
+    itemsSummary: dto.manufacturerBusinessName ?? "",
+    total: formatCurrency(dto.total),
+    status: orderStatusLabel(dto.status),
   };
 }
 
-const INCOMING_STATUS_MAP: Record<OrderStatusDto, IncomingOrderStatus> = {
-  NEW: "new",
-  PROCESSING: "new",
-  SHIPPED: "shipped",
+const INCOMING_STATUS_MAP: Partial<Record<OrderStatusDto, IncomingOrderStatus>> = {
+  PENDING: "new",
+  ACCEPTED: "accepted",
   IN_TRANSIT: "shipped",
-  DELIVERED: "shipped",
-  CANCELLED: "shipped",
+  OUT_FOR_DELIVERY: "out_for_delivery",
+  DELIVERED: "delivered",
 };
 
 export function mapIncomingOrder(dto: OrderDto): IncomingOrder {
   return {
     id: dto.orderNumber,
-    customer: dto.counterpartyName,
-    location: dto.counterpartyLocation ?? "",
-    summary: dto.itemsSummary,
-    total: formatCurrency(dto.totalAmount),
+    orderId: dto.id,
+    counterpartyId: dto.distributorId,
+    customer: dto.distributorBusinessName ?? "",
+    location: "",
+    summary: dto.deliveryAddress ?? "",
+    total: formatCurrency(dto.total),
     status: INCOMING_STATUS_MAP[dto.status] ?? "new",
   };
 }
 
-export function mapInventoryItem(dto: InventoryItemDto): InventoryItem {
+export function mapInventoryItem(dto: ProductDetailDto): InventoryItem {
   return {
     id: dto.id,
     name: dto.name,
-    sku: `SKU ${dto.sku} · ${formatCurrency(dto.unitPrice)}`,
-    units: `${dto.stockQuantity.toLocaleString()} units`,
-    low: dto.stockQuantity <= dto.lowStockThreshold,
+    sku: `SKU ${dto.sku} · ${formatCurrency(dto.baseUnitPrice)}`,
+    units: `${dto.stockQty.toLocaleString()} units`,
+    stockQty: dto.stockQty,
+    low: dto.stockQty <= dto.lowStockThreshold,
   };
 }
 
-export function mapCartItem(dto: CartDto["items"][number]): CartItem {
+export function mapBusinessProfile(dto: UserDto): BusinessProfile {
   return {
-    product: mapProduct(dto.product),
-    quantity: dto.quantity,
+    fullName: dto.fullName,
+    companyName: dto.businessName ?? "",
+    email: dto.email,
+    phone: dto.phone ?? "",
+    location: dto.city ?? "",
+    description: dto.description ?? "",
   };
 }
 
@@ -122,22 +173,29 @@ export function mapNotification(dto: NotificationDto): Notification {
     type: NOTIFICATION_TYPE_MAP[dto.type] ?? "system",
     title: dto.title,
     body: dto.body,
-    timestamp: dto.createdAt,
+    timestamp: formatRelativeTime(dto.createdAt),
     read: dto.read,
   };
 }
 
-const ADDRESS_LABEL_MAP: Record<AddressLabelDto, AddressLabel> = {
+const ADDRESS_LABEL_FROM_DTO: Record<AddressLabelDto, AddressLabel> = {
   WAREHOUSE: "Warehouse",
   OFFICE: "Office",
   STOREFRONT: "Storefront",
   OTHER: "Other",
 };
 
+const ADDRESS_LABEL_TO_DTO: Record<AddressLabel, AddressLabelDto> = {
+  Warehouse: "WAREHOUSE",
+  Office: "OFFICE",
+  Storefront: "STOREFRONT",
+  Other: "OTHER",
+};
+
 export function mapAddress(dto: AddressDto): Address {
   return {
     id: dto.id,
-    label: ADDRESS_LABEL_MAP[dto.label] ?? "Other",
+    label: ADDRESS_LABEL_FROM_DTO[dto.label] ?? "Other",
     line1: dto.line1,
     city: dto.city,
     region: dto.region,
@@ -146,41 +204,45 @@ export function mapAddress(dto: AddressDto): Address {
   };
 }
 
-export function mapPaymentMethod(dto: PaymentMethodDto): PaymentMethod {
-  return {
-    id: dto.id,
-    type: dto.type === "MOBILE_MONEY" ? "mobile_money" : "card",
-    label: dto.provider,
-    detail: dto.detail,
-    holderName: dto.holderName,
-    isDefault: dto.isDefault,
-  };
+export function addressLabelToDto(label: AddressLabel): AddressLabelDto {
+  return ADDRESS_LABEL_TO_DTO[label] ?? "OTHER";
 }
 
-export function mapBusinessProfile(dto: BusinessProfileDto): BusinessProfile {
+export function mapDashboard(dto: ManufacturerDashboardDto, businessName: string) {
   return {
-    fullName: dto.fullName,
-    companyName: dto.companyName,
-    email: dto.email,
-    phone: dto.phone,
-    location: dto.location,
-    description: dto.description,
-  };
-}
-
-export function mapDashboard(dto: DashboardStatsDto) {
-  return {
-    businessName: dto.businessName,
-    revenue: formatCurrency(dto.revenueLast30Days),
-    ordersFulfilled: dto.ordersFulfilledWithoutDelay,
+    businessName,
+    revenue: formatCurrency(dto.revenue30d),
+    ordersFulfilled: dto.orderCount,
     productCount: dto.productCount,
     lowStockCount: dto.lowStockCount,
-    inquiryCount: dto.inquiryCount,
-    lowStockProductNames: dto.lowStockProductNames,
+    inquiryCount: 0,
+    lowStockProductNames: [] as string[],
     recentOrders: dto.recentOrders.map((order) => ({
-      id: `${order.orderNumber} · ${order.counterpartyName}`,
-      total: formatCurrency(order.totalAmount),
-      tag: (order.status === "NEW" ? "NEW" : "SHIPPED") as "NEW" | "SHIPPED",
+      id: `${order.orderNumber} · ${order.distributorBusinessName}`,
+      total: formatCurrency(order.total),
+      tag: (order.status === "PENDING" ? "NEW" : "SHIPPED") as "NEW" | "SHIPPED",
     })),
+  };
+}
+
+export function mapConversation(dto: ConversationDto): Conversation {
+  return {
+    id: dto.id,
+    counterpartyId: dto.counterpartyId,
+    counterpartyName: dto.counterpartyName ?? "Unknown",
+    lastMessagePreview: dto.lastMessagePreview ?? "",
+    unreadCount: dto.unreadCount,
+    createdAt: dto.createdAt,
+  };
+}
+
+export function mapMessage(dto: MessageDto, selfId: string): ChatMessage {
+  return {
+    id: dto.id,
+    conversationId: dto.conversationId,
+    body: dto.body,
+    createdAt: dto.createdAt,
+    fromSelf: dto.senderId === selfId,
+    readAt: dto.readAt,
   };
 }

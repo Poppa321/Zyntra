@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
   },
   hero: {
     paddingTop: 80,
-    paddingBottom: 40,
+    paddingBottom: 32,
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
   },
   backButton: {
     position: "absolute",
@@ -63,15 +63,15 @@ const styles = StyleSheet.create({
     top: 60,
   },
   logo: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: 23,
     color: colors.white,
   },
   subtitle: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textMuted,
   },
   card: {
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 4,
   },
   cardContent: {
-    padding: 28,
-    paddingBottom: 40,
-    gap: 20,
+    padding: 22,
+    paddingBottom: 32,
+    gap: 16,
   },
 });

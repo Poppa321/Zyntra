@@ -19,7 +19,7 @@ import {
   useMarkNotificationReadMutation,
   useNotificationsQuery,
 } from "@/hooks/useNotifications";
-import type { Notification, NotificationType } from "@/data/sampleData";
+import type { Notification, NotificationType } from "@/types/domain";
 import { colors } from "@/theme/colors";
 import { cardShadow, radius } from "@/theme/spacing";
 
@@ -118,26 +118,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   markAll: {
-    fontSize: 13,
+    fontSize: 12,
   },
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 32,
     flexGrow: 1,
   },
   card: {
     flexDirection: "row",
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 12,
     gap: 12,
   },
   cardUnread: {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   dot: {
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
   },
   text: {
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 17,
   },
   timestamp: {
     marginTop: 2,
@@ -193,6 +193,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

@@ -1,53 +1,54 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { listProducts, getProduct, listTopManufacturers } from "@/api/endpoints/products";
-import { mapProduct } from "@/api/mappers";
-import { manufacturers as sampleManufacturers, products as sampleProducts } from "@/data/sampleData";
+import { getProduct, listProducts } from "@/api/endpoints/products";
+import { mapProductCard, mapProductDetail } from "@/api/mappers";
 
-export function useProductsQuery(category?: string) {
+export function useProductsQuery(category?: string, search?: string) {
   const query = useQuery({
-    queryKey: ["products", category ?? "all"],
+    queryKey: ["products", category ?? "all", search ?? ""],
     queryFn: () =>
-      listProducts({ category: category === "All" ? undefined : category }).then((list) =>
-        list.map(mapProduct),
-      ),
+      listProducts({
+        category: category === "All" ? undefined : category,
+        search: search || undefined,
+        size: 50,
+      }).then((page) => page.content.map(mapProductCard)),
   });
 
-  const fallback =
-    !category || category === "All"
-      ? sampleProducts
-      : sampleProducts.filter((p) => p.category === category);
-
-  return { ...query, data: query.data ?? fallback };
+  return { ...query, data: query.data ?? [] };
 }
 
 export function useProductQuery(id: string | undefined) {
   const query = useQuery({
     queryKey: ["product", id],
-    queryFn: () => getProduct(id as string).then(mapProduct),
+    queryFn: () => getProduct(id as string).then(mapProductDetail),
     enabled: !!id,
   });
 
-  const fallback = sampleProducts.find((p) => p.id === id) ?? sampleProducts[0];
-
-  return { ...query, data: query.data ?? fallback };
+  return query;
 }
 
+/** The backend has no "top manufacturers" endpoint, so this is derived from the product listing. */
 export function useTopManufacturersQuery() {
   const query = useQuery({
-    queryKey: ["manufacturers", "top"],
+    queryKey: ["manufacturers", "derived"],
     queryFn: () =>
-      listTopManufacturers().then((list) =>
-        list.map((dto) => ({
-          id: dto.id,
-          name: dto.name,
-          location: dto.location,
-          rating: dto.rating,
-          verified: dto.verified,
-          tagline: "",
-        })),
-      ),
+      listProducts({ size: 50 }).then((page) => {
+        const seen = new Map<string, { id: string; name: string; location: string; rating: number; verified: boolean; tagline: string }>();
+        for (const product of page.content) {
+          if (!seen.has(product.manufacturerId)) {
+            seen.set(product.manufacturerId, {
+              id: product.manufacturerId,
+              name: product.manufacturerName,
+              location: "",
+              rating: 4.8,
+              verified: product.verified,
+              tagline: "",
+            });
+          }
+        }
+        return [...seen.values()];
+      }),
   });
 
-  return { ...query, data: query.data ?? sampleManufacturers };
+  return { ...query, data: query.data ?? [] };
 }

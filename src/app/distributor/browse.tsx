@@ -11,7 +11,7 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useProductsQuery, useTopManufacturersQuery } from "@/hooks/useProducts";
-import { categories } from "@/data/sampleData";
+import { categories } from "@/types/domain";
 import { colors } from "@/theme/colors";
 
 export default function Browse() {
@@ -132,43 +132,43 @@ export default function Browse() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
-    gap: 16,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 16,
+    gap: 12,
   },
   title: {
-    fontSize: 26,
+    fontSize: 23,
     color: colors.textPrimary,
   },
   chipsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 16,
+    paddingHorizontal: 18,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   carouselContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
   },
   row: {
     gap: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
   },
   listContent: {
-    paddingBottom: 32,
+    paddingBottom: 24,
     gap: 12,
     flexGrow: 1,
   },
@@ -179,6 +179,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

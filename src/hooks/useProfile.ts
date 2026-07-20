@@ -1,31 +1,45 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getProfile, updateProfile } from "@/api/endpoints/profile";
+import * as authApi from "@/api/endpoints/auth";
 import { mapBusinessProfile } from "@/api/mappers";
-import { businessProfile as sampleBusinessProfile, type BusinessProfile } from "@/data/sampleData";
-import type { BusinessProfileDto } from "@/api/types";
+import type { BusinessProfile } from "@/types/domain";
 
 const PROFILE_KEY = ["business-profile"];
+
+const EMPTY_PROFILE: BusinessProfile = {
+  fullName: "",
+  companyName: "",
+  email: "",
+  phone: "",
+  location: "",
+  description: "",
+};
 
 export function useProfileQuery() {
   const query = useQuery({
     queryKey: PROFILE_KEY,
-    queryFn: () => getProfile().then(mapBusinessProfile),
-    initialData: sampleBusinessProfile,
-    staleTime: Infinity,
+    queryFn: () => authApi.me().then(mapBusinessProfile),
   });
 
-  return { ...query, data: query.data ?? sampleBusinessProfile };
+  return { ...query, data: query.data ?? EMPTY_PROFILE };
 }
 
 export function useUpdateProfileMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: BusinessProfile) => {
-      queryClient.setQueryData<BusinessProfile>(PROFILE_KEY, input);
-
-      const payload: Partial<BusinessProfileDto> = { ...input };
-      return updateProfile(payload).catch(() => null);
+    mutationFn: (input: BusinessProfile) =>
+      authApi
+        .updateMe({
+          fullName: input.fullName,
+          businessName: input.companyName || undefined,
+          phone: input.phone || undefined,
+          city: input.location || undefined,
+          description: input.description || undefined,
+        })
+        .then(mapBusinessProfile),
+    onSuccess: (profile) => {
+      queryClient.setQueryData<BusinessProfile>(PROFILE_KEY, profile);
+      queryClient.invalidateQueries({ queryKey: ["session"] });
     },
   });
 }

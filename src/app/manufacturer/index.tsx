@@ -1,7 +1,16 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Bell, ChatCircleText, Package, TrendUp, Warning, WarningCircle } from "phosphor-react-native";
+import {
+  Bell,
+  ChatCircleText,
+  ClipboardText,
+  Package,
+  PlusCircle,
+  TrendUp,
+  Warning,
+  WarningCircle,
+} from "phosphor-react-native";
 
 import { IconButton } from "@/components/IconButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
@@ -20,6 +29,13 @@ export default function ManufacturerDashboard() {
     { value: String(data.productCount), label: "Products", icon: Package },
     { value: String(data.lowStockCount), label: "Low stock", icon: WarningCircle },
     { value: String(data.inquiryCount), label: "Inquiries", icon: ChatCircleText },
+  ];
+
+  const quickActions = [
+    { label: "Add product", icon: PlusCircle, onPress: () => router.push("/list-product") },
+    { label: "Inventory", icon: Package, onPress: () => router.push("/manufacturer/inventory") },
+    { label: "Orders", icon: ClipboardText, onPress: () => router.push("/manufacturer/orders") },
+    { label: "Messages", icon: ChatCircleText, onPress: () => router.push("/manufacturer/messages") },
   ];
 
   return (
@@ -83,6 +99,23 @@ export default function ManufacturerDashboard() {
           </View>
         </View>
 
+        <View style={styles.quickActionsRow}>
+          {quickActions.map((action) => (
+            <Pressable
+              key={action.label}
+              onPress={action.onPress}
+              style={({ pressed }) => [styles.quickAction, pressed && styles.quickActionPressed]}
+            >
+              <View style={styles.quickActionIcon}>
+                <action.icon size={19} color={colors.navy} weight="bold" />
+              </View>
+              <Text weight="semiBold" style={styles.quickActionLabel} numberOfLines={1}>
+                {action.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <View style={styles.statsRow}>
           {stats.map((stat) => (
             <View key={stat.label} style={styles.statCard}>
@@ -142,16 +175,16 @@ export default function ManufacturerDashboard() {
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   hero: {
     backgroundColor: colors.cardBg,
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 14,
+    gap: 9,
   },
   heroTopRow: {
     flexDirection: "row",
@@ -159,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   eyebrow: {
-    fontSize: 13,
+    fontSize: 12,
   },
   heroTopRight: {
     flexDirection: "row",
@@ -184,11 +217,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   poweredByBrand: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   businessName: {
-    fontSize: 24,
+    fontSize: 21,
     color: colors.textPrimary,
     marginTop: -4,
   },
@@ -197,19 +230,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: radius.sm,
-    padding: 16,
-    minHeight: 72,
-    gap: 12,
+    padding: 10,
+    minHeight: 62,
+    gap: 10,
   },
   statBannerText: {
     flex: 1,
     gap: 4,
   },
   statBannerValue: {
-    fontSize: 26,
+    fontSize: 23,
   },
   statBannerLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   statBannerIcon: {
@@ -219,22 +252,50 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  quickActionsRow: {
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 16,
+    marginTop: 14,
+  },
+  quickAction: {
+    flex: 1,
+    alignItems: "center",
+    gap: 6,
+  },
+  quickActionPressed: {
+    opacity: 0.7,
+  },
+  quickActionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.sm,
+    backgroundColor: colors.platinum,
+    alignItems: "center",
+    justifyContent: "center",
+    ...cardShadow,
+  },
+  quickActionLabel: {
+    fontSize: 10,
+    color: colors.textPrimary,
+    textAlign: "center",
+  },
   statsRow: {
     flexDirection: "row",
-    gap: 9,
-    paddingHorizontal: 24,
-    marginTop: 22,
+    gap: 8,
+    paddingHorizontal: 16,
+    marginTop: 14,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
-    gap: 10,
+    padding: 10,
+    gap: 8,
     ...cardShadow,
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 20,
     color: colors.textPrimary,
   },
   statLabel: {
@@ -242,11 +303,11 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   warningBanner: {
-    marginHorizontal: 24,
-    marginTop: 20,
+    marginHorizontal: 16,
+    marginTop: 12,
     backgroundColor: "#fff2db",
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 10,
   },
   warningTitleRow: {
     flexDirection: "row",
@@ -254,22 +315,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   warningTitle: {
-    fontSize: 14,
+    fontSize: 13,
   },
   warningSubtitle: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 11,
   },
   sectionTitle: {
-    marginTop: 28,
-    marginHorizontal: 24,
-    fontSize: 17,
+    marginTop: 16,
+    marginHorizontal: 16,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   ordersList: {
-    marginTop: 16,
-    marginHorizontal: 24,
-    gap: 12,
+    marginTop: 10,
+    marginHorizontal: 16,
+    gap: 8,
   },
   orderRow: {
     flexDirection: "row",
@@ -277,15 +338,15 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 10,
   },
   orderId: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   orderTotal: {
     marginTop: 10,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   orderTag: {

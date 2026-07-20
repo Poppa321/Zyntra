@@ -82,13 +82,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    height: 52,
+    height: 46,
     backgroundColor: colors.offWhite,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontFamily: fonts.regular,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
     height: "100%",
   },
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.error,
   },
   leftIcon: {

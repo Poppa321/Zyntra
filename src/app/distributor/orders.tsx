@@ -2,28 +2,37 @@ import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CaretRight, ClipboardText } from "phosphor-react-native";
+import { CaretRight, ChatCircleText, ClipboardText } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { StatusDot } from "@/components/StatusDot";
 import { Text } from "@/components/Text";
+import { useStartConversationMutation } from "@/hooks/useChat";
 import { useDistributorOrdersQuery } from "@/hooks/useOrders";
-import type { OrderTab } from "@/api/endpoints/orders";
-import type { Order, OrderStatus } from "@/data/sampleData";
+import type { OrderGroup } from "@/api/types";
+import type { Order } from "@/types/domain";
 import { colors } from "@/theme/colors";
 import { cardShadow, radius } from "@/theme/spacing";
 
-const TABS: { key: OrderTab; label: string; statuses: OrderStatus[] }[] = [
-  { key: "active", label: "Active", statuses: ["In Transit", "Processing"] },
-  { key: "completed", label: "Completed", statuses: ["Delivered"] },
-  { key: "cancelled", label: "Cancelled", statuses: [] },
+const TABS: { key: OrderGroup; label: string }[] = [
+  { key: "active", label: "Active" },
+  { key: "completed", label: "Completed" },
+  { key: "cancelled", label: "Cancelled" },
 ];
 
 export default function Orders() {
   const [activeTab, setActiveTab] = useState(0);
-  const { data } = useDistributorOrdersQuery(TABS[activeTab].key);
+  const { data: filtered } = useDistributorOrdersQuery(TABS[activeTab].key);
+  const startConversation = useStartConversationMutation();
 
-  const filtered = data.filter((order) => TABS[activeTab].statuses.includes(order.status));
+  function handleMessage(order: Order) {
+    startConversation.mutate(order.counterpartyId, {
+      onSuccess: (conversation) => router.push(`/chat/${conversation.id}`),
+      onError: (error) => showAlert("Couldn't open chat", getApiErrorMessage(error)),
+    });
+  }
 
   function renderItem({ item: order }: { item: Order }) {
     return (
@@ -37,6 +46,9 @@ export default function Orders() {
             <Text weight="semiBold" style={styles.statusLabel}>
               {order.status}
             </Text>
+            <Pressable hitSlop={10} onPress={() => handleMessage(order)}>
+              <ChatCircleText size={16} color={colors.textMuted} />
+            </Pressable>
           </View>
         </View>
         <Text weight="regular" style={styles.summary}>
@@ -47,7 +59,7 @@ export default function Orders() {
             {order.total}
           </Text>
           <Pressable
-            onPress={() => router.push(`/order-tracking/${order.id.replace("#", "")}`)}
+            onPress={() => router.push(`/order-tracking/${order.orderId}`)}
             hitSlop={8}
             style={styles.trackButton}
           >
@@ -117,26 +129,26 @@ export default function Orders() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 32,
     flexGrow: 1,
   },
   header: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 26,
+    fontSize: 23,
     color: colors.textPrimary,
   },
   tabsRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 24,
+    marginTop: 18,
   },
   tab: {
     height: 40,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
@@ -154,7 +166,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   tabLabel: {
-    fontSize: 13,
+    fontSize: 12,
   },
   card: {
     backgroundColor: colors.cardBg,
@@ -168,7 +180,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   orderId: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textPrimary,
   },
   statusRow: {
@@ -177,12 +189,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statusLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textPrimary,
   },
   summary: {
     marginTop: 12,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textPrimary,
   },
   cardBottomRow: {
@@ -192,7 +204,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   total: {
-    fontSize: 17,
+    fontSize: 16,
   },
   trackButton: {
     flexDirection: "row",
@@ -200,7 +212,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   track: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   emptyWrap: {
@@ -210,6 +222,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   empty: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

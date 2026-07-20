@@ -5,14 +5,17 @@ export const colors = {
   goldDark: "#d17a3d",
 
   white: "#ffffff",
-  offWhite: "#f5f6f4",
-  cardBg: "#f1f2ee",
-  border: "#ebede9",
+  // Platinum neutral tier: sections and cards sit on true platinum,
+  // fields on a platinum-tinted near-white, hairlines a step deeper.
+  platinum: "#e5e4e2",
+  offWhite: "#f2f1ef",
+  cardBg: "#e5e4e2",
+  border: "#d9d8d5",
 
   textPrimary: "#0f2743",
-  textSecondary: "#5c6673",
-  textMuted: "#5f6b7a",
-  textPlaceholder: "#5f6b7a",
+  textSecondary: "#525c68",
+  textMuted: "#556170",
+  textPlaceholder: "#556170",
   textFaint: "#b2b8bd",
 
   error: "#d64545",

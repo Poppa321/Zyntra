@@ -1,17 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { addCartItem, getCart, removeCartItem, updateCartItem } from "@/api/endpoints/cart";
-import { mapCartItem } from "@/api/mappers";
-import { cartItems as sampleCartItems, type CartItem, type Product } from "@/data/sampleData";
+import type { CartItem, Product } from "@/types/domain";
 
+// The backend has no cart entity — orders are created directly from an items
+// array — so the cart lives purely as local device state (react-query cache
+// used as a lightweight store) and is translated into CreateOrderRequest.items
+// at checkout (see useOrders.ts).
 const CART_QUERY_KEY = ["cart"];
 const DELIVERY_FEE = 1200;
 
 export function useCartQuery() {
   const query = useQuery({
     queryKey: CART_QUERY_KEY,
-    queryFn: () => getCart().then((cart) => cart.items.map(mapCartItem)),
-    initialData: sampleCartItems,
+    queryFn: () => Promise.resolve<CartItem[]>([]),
+    initialData: [],
     staleTime: Infinity,
   });
 
@@ -42,7 +44,6 @@ export function useAddToCartMutation() {
         }
         return [...items, { product, quantity }];
       });
-      return addCartItem(product.id, quantity).catch(() => null);
     },
   });
 }
@@ -54,7 +55,6 @@ export function useUpdateCartItemQuantityMutation() {
       updateLocalCart(queryClient, (items) =>
         items.map((item) => (item.product.id === productId ? { ...item, quantity } : item)),
       );
-      return updateCartItem(productId, quantity).catch(() => null);
     },
   });
 }
@@ -64,7 +64,10 @@ export function useRemoveFromCartMutation() {
   return useMutation({
     mutationFn: async (productId: string) => {
       updateLocalCart(queryClient, (items) => items.filter((item) => item.product.id !== productId));
-      return removeCartItem(productId).catch(() => null);
     },
   });
+}
+
+export function clearCart(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.setQueryData<CartItem[]>(CART_QUERY_KEY, []);
 }

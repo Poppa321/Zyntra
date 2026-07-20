@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   Bell,
   Buildings,
   CaretRight,
-  CreditCard,
   MapPin,
   SignOut,
   type Icon,
@@ -14,19 +13,19 @@ import {
 
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { setAuthToken } from "@/api/client";
+import { logout } from "@/hooks/useAuth";
 import { useNotificationsQuery } from "@/hooks/useNotifications";
 import { colors } from "@/theme/colors";
 import { radius } from "@/theme/spacing";
+import { queryClient } from "@/lib/queryClient";
 
 type ProfileScreenProps = {
   name: string;
   roleLabel: string;
 };
 
-const MENU_ITEMS: { label: string; icon: Icon; route: "/profile/business" | "/profile/payment-methods" | "/profile/addresses" | "/notifications" }[] = [
+const MENU_ITEMS: { label: string; icon: Icon; route: "/profile/business" | "/profile/addresses" | "/notifications" }[] = [
   { label: "Business profile", icon: Buildings, route: "/profile/business" },
-  { label: "Payment methods", icon: CreditCard, route: "/profile/payment-methods" },
   { label: "Delivery addresses", icon: MapPin, route: "/profile/addresses" },
   { label: "Notifications", icon: Bell, route: "/notifications" },
 ];
@@ -37,9 +36,22 @@ export function ProfileScreen({ name, roleLabel }: ProfileScreenProps) {
   const hasUnread = notifications.some((item) => !item.read);
   const initial = name.trim().charAt(0).toUpperCase();
 
-  async function handleSignOut() {
-    await setAuthToken(null);
+  async function performSignOut() {
+    await logout();
+    queryClient.clear();
     router.replace("/welcome");
+  }
+
+  // Alert.alert has no button support on web, so fall back to window.confirm there.
+  function handleSignOut() {
+    if (Platform.OS === "web") {
+      if (window.confirm("Are you sure you want to sign out?")) void performSignOut();
+      return;
+    }
+    Alert.alert("Sign out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Sign out", style: "destructive", onPress: () => void performSignOut() },
+    ]);
   }
 
   return (
@@ -116,10 +128,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
   },
   avatar: {
     width: 72,
@@ -130,24 +142,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarInitial: {
-    fontSize: 28,
+    fontSize: 24,
     color: colors.navy,
   },
   heroText: {
     gap: 6,
   },
   name: {
-    fontSize: 20,
+    fontSize: 18,
     color: colors.textPrimary,
   },
   role: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textMuted,
   },
   menu: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     paddingTop: 22,
-    paddingBottom: 40,
+    paddingBottom: 32,
     gap: 12,
   },
   menuRow: {
@@ -174,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
   },
   menuLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
 });

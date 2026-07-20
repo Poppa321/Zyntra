@@ -90,16 +90,16 @@ const styles = StyleSheet.create({
     height: 64,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    gap: 16,
+    paddingHorizontal: 16,
+    gap: 12,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   saveButton: {
-    height: 38,
+    height: 34,
     paddingHorizontal: 18,
     borderRadius: radius.sm,
     backgroundColor: colors.gold,
@@ -110,12 +110,12 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   saveLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.navy,
   },
   content: {
-    padding: 24,
-    gap: 16,
-    paddingBottom: 40,
+    padding: 18,
+    gap: 12,
+    paddingBottom: 32,
   },
 });

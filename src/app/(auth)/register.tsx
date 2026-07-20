@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
-import { Divider } from "@/components/Divider";
-import { GoogleIcon } from "@/components/GoogleIcon";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useRegisterMutation } from "@/hooks/useAuth";
@@ -38,7 +36,7 @@ export default function Register() {
     register.mutate(
       {
         fullName,
-        companyName,
+        businessName: companyName,
         email,
         password,
         role: role === "distributor" ? "DISTRIBUTOR" : "MANUFACTURER",
@@ -108,17 +106,6 @@ export default function Register() {
         disabled={!canSubmit}
       />
 
-      <Divider label="or continue with" />
-
-      <Button
-        label="Continue with Google"
-        variant="outline"
-        icon={<GoogleIcon size={18} />}
-        iconPosition="start"
-        onPress={() =>
-          Alert.alert("Google sign-in coming soon", "For now, create your account with email and password.")
-        }
-      />
 
       <View style={styles.footer}>
         <Text weight="medium" color={colors.textSecondary} style={styles.footerText}>
@@ -143,6 +130,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

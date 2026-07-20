@@ -2,11 +2,23 @@ export type Role = "MANUFACTURER" | "DISTRIBUTOR";
 
 export type UserDto = {
   id: string;
-  fullName: string;
   email: string;
-  role: Role;
-  companyName: string;
-  location?: string;
+  fullName: string;
+  businessName?: string;
+  role: Role | null;
+  phone?: string;
+  city?: string;
+  description?: string;
+  verified: boolean;
+  darkMode: boolean;
+};
+
+export type UpdateProfilePayload = {
+  fullName: string;
+  businessName?: string;
+  phone?: string;
+  city?: string;
+  description?: string;
 };
 
 export type AuthResponseDto = {
@@ -20,119 +32,213 @@ export type LoginPayload = {
 };
 
 export type RegisterPayload = {
-  fullName: string;
-  companyName: string;
   email: string;
   password: string;
+  fullName: string;
+  businessName?: string;
+  phone?: string;
+  city?: string;
   role: Role;
 };
 
 export type PriceTierDto = {
+  id: string;
   minQty: number;
   maxQty: number | null;
   unitPrice: number;
-  isBestValue: boolean;
 };
 
-export type ProductDto = {
+export type PriceTierRequest = {
+  minQty: number;
+  maxQty: number | null;
+  unitPrice: number;
+};
+
+export type ProductCardDto = {
   id: string;
   name: string;
-  description?: string;
+  imageUrl?: string;
   manufacturerId: string;
   manufacturerName: string;
-  category: string;
-  rating: number;
+  verified: boolean;
+  baseUnitPrice: number;
+  moq: number;
   unit: string;
-  basePrice: number;
-  minOrderQty: number;
-  stockQuantity: number;
-  leadTime: string;
-  images: string[];
+};
+
+export type ProductDetailDto = {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  description?: string;
+  imageUrl?: string;
+  baseUnitPrice: number;
+  unit: string;
+  moq: number;
+  stockQty: number;
+  lowStockThreshold: number;
+  leadTimeDaysMin: number;
+  leadTimeDaysMax: number;
+  active: boolean;
+  manufacturerId: string;
+  manufacturerName: string;
+  verified: boolean;
   priceTiers: PriceTierDto[];
 };
 
-export type ManufacturerDto = {
+export type ProductCreateRequest = {
+  name: string;
+  sku: string;
+  category: string;
+  description?: string;
+  imageUrl?: string;
+  baseUnitPrice: number;
+  unit: string;
+  moq: number;
+  stockQty: number;
+  lowStockThreshold: number;
+  leadTimeDaysMin: number;
+  leadTimeDaysMax: number;
+  tiers?: PriceTierRequest[];
+};
+
+export type StockUpdateRequest = {
+  stockQty: number;
+};
+
+export type LowStockProductDto = {
   id: string;
   name: string;
-  location: string;
-  verified: boolean;
-  rating: number;
+  sku: string;
+  stockQty: number;
+  lowStockThreshold: number;
+  unit: string;
 };
 
-export type CartItemDto = {
-  id: string;
-  product: ProductDto;
-  quantity: number;
+export type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 };
 
-export type CartDto = {
-  id: string;
-  items: CartItemDto[];
-  subtotal: number;
-  deliveryFee: number;
-  total: number;
-};
-
-export type OrderStatusDto = "PROCESSING" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED" | "NEW" | "SHIPPED";
+export type OrderStatusDto =
+  | "PENDING"
+  | "ACCEPTED"
+  | "IN_TRANSIT"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "DECLINED"
+  | "CANCELLED";
 
 export type OrderDto = {
   id: string;
   orderNumber: string;
+  distributorId: string;
+  distributorBusinessName?: string;
+  manufacturerId: string;
+  manufacturerBusinessName?: string;
   status: OrderStatusDto;
-  itemsSummary: string;
-  totalAmount: number;
-  counterpartyName: string;
-  counterpartyLocation?: string;
+  deliveryAddress?: string;
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  eta?: string;
+  createdAt: string;
+  updatedAt: string;
+  paymentStatus?: string;
+};
+
+export type OrderItemDto = {
+  id: string;
+  productId: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
+export type OrderStatusHistoryDto = {
+  status: OrderStatusDto;
+  note?: string;
   createdAt: string;
 };
 
-export type TrackingStepDto = {
-  key: string;
-  label: string;
-  status: "done" | "current" | "pending";
-  timestamp?: string;
+export type OrderDetailDto = {
+  order: OrderDto;
+  items: OrderItemDto[];
+  statusHistory: OrderStatusHistoryDto[];
 };
 
-export type OrderTrackingDto = {
-  orderId: string;
-  steps: TrackingStepDto[];
-  courierName: string;
-  courierVehicle: string;
-  courierHub: string;
-  estimatedDelivery: string;
-};
-
-export type InventoryItemDto = {
-  id: string;
+export type OrderItemRequest = {
   productId: string;
-  name: string;
-  sku: string;
-  unitPrice: number;
-  stockQuantity: number;
-  lowStockThreshold: number;
+  quantity: number;
 };
 
-export type DashboardStatsDto = {
-  businessName: string;
-  revenueLast30Days: number;
-  ordersFulfilledWithoutDelay: number;
+export type CreateOrderRequest = {
+  manufacturerId: string;
+  deliveryAddress?: string;
+  items: OrderItemRequest[];
+};
+
+export type OrderGroup = "active" | "completed" | "cancelled";
+
+export type RecentOrderDto = {
+  orderNumber: string;
+  distributorBusinessName: string;
+  total: number;
+  status: OrderStatusDto;
+};
+
+export type ManufacturerDashboardDto = {
+  revenue30d: number;
+  orderCount: number;
   productCount: number;
   lowStockCount: number;
-  inquiryCount: number;
-  lowStockProductNames: string[];
-  recentOrders: OrderDto[];
+  recentOrders: RecentOrderDto[];
 };
 
-export type CreateProductPayload = {
-  name: string;
-  description?: string;
-  category: string;
-  unitPrice: number;
-  unit: string;
-  minOrderQty: number;
-  stockQuantity: number;
-  contactPhone: string;
-  businessLocation: string;
+export type PaymentStatusDto = "INITIALIZED" | "SUCCESS" | "FAILED";
+
+export type InitializePaymentResponse = {
+  authorizationUrl: string;
+  reference: string;
+};
+
+export type PaymentDto = {
+  orderId: string;
+  reference: string;
+  status: PaymentStatusDto;
+  paidAt?: string;
+};
+
+export type ConversationDto = {
+  id: string;
+  counterpartyId: string;
+  counterpartyName?: string;
+  lastMessagePreview?: string;
+  unreadCount: number;
+  createdAt: string;
+};
+
+export type MessageDto = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  orderId?: string;
+  body: string;
+  readAt?: string;
+  createdAt: string;
+};
+
+export type ApiErrorBody = {
+  timestamp?: string;
+  status?: number;
+  code?: string;
+  message?: string;
+  fieldErrors?: { field: string; message: string }[];
 };
 
 export type NotificationTypeDto = "ORDER" | "INVENTORY" | "SYSTEM" | "PROMO";
@@ -164,31 +270,4 @@ export type CreateAddressPayload = {
   city: string;
   region: string;
   phone: string;
-};
-
-export type PaymentMethodTypeDto = "CARD" | "MOBILE_MONEY";
-
-export type PaymentMethodDto = {
-  id: string;
-  type: PaymentMethodTypeDto;
-  provider: string;
-  detail: string;
-  holderName: string;
-  isDefault: boolean;
-};
-
-export type CreatePaymentMethodPayload = {
-  type: PaymentMethodTypeDto;
-  provider: string;
-  detail: string;
-  holderName: string;
-};
-
-export type BusinessProfileDto = {
-  fullName: string;
-  companyName: string;
-  email: string;
-  phone: string;
-  location: string;
-  description: string;
 };

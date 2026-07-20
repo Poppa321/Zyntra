@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sentText: {
-    fontSize: 13,
+    fontSize: 12,
   },
   footer: {
     flexDirection: "row",
@@ -87,6 +87,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

@@ -17,7 +17,7 @@ import {
   useRemoveAddressMutation,
   useSetDefaultAddressMutation,
 } from "@/hooks/useAddresses";
-import type { Address, AddressLabel } from "@/data/sampleData";
+import type { Address, AddressLabel } from "@/types/domain";
 import { colors } from "@/theme/colors";
 import { cardShadow, radius } from "@/theme/spacing";
 
@@ -151,26 +151,26 @@ const styles = StyleSheet.create({
     height: 64,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    gap: 16,
+    paddingHorizontal: 16,
+    gap: 12,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 32,
     flexGrow: 1,
   },
   form: {
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 20,
+    padding: 16,
     gap: 14,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   typeRow: {
     flexDirection: "row",
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 12,
     gap: 14,
     ...cardShadow,
   },
@@ -214,14 +214,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   cardDetail: {
-    fontSize: 12,
+    fontSize: 11,
   },
   setDefault: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
   },
   emptyWrap: {
@@ -232,6 +232,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

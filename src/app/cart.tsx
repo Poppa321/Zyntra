@@ -3,12 +3,15 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ArrowRight, Minus, Plus, ShoppingCartSimple, Trash } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { ProductThumb } from "@/components/ProductThumb";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
+import { useAddressesQuery } from "@/hooks/useAddresses";
 import { useCartQuery, useRemoveFromCartMutation, useUpdateCartItemQuantityMutation } from "@/hooks/useCart";
 import { usePlaceOrderMutation } from "@/hooks/useOrders";
-import type { CartItem } from "@/data/sampleData";
+import type { CartItem } from "@/types/domain";
 import { colors } from "@/theme/colors";
 import { cardShadow, radius } from "@/theme/spacing";
 
@@ -17,11 +20,24 @@ export default function Cart() {
   const updateQuantity = useUpdateCartItemQuantityMutation();
   const removeItem = useRemoveFromCartMutation();
   const placeOrder = usePlaceOrderMutation();
+  const { data: addresses } = useAddressesQuery();
 
   function handlePlaceOrder() {
+    const defaultAddress = addresses.find((a) => a.isDefault) ?? addresses[0];
+    const deliveryAddress = defaultAddress
+      ? `${defaultAddress.line1}, ${defaultAddress.city}`
+      : undefined;
+
     placeOrder.mutate(
-      { items, total },
-      { onSuccess: (orderId) => router.replace(`/order-tracking/${orderId}`) },
+      { items, deliveryAddress },
+      {
+        onSuccess: (orders) => {
+          const first = orders[0];
+          if (first) router.replace(`/order-tracking/${first.order.id}`);
+          else router.replace("/distributor/orders");
+        },
+        onError: (error) => showAlert("Couldn't place order", getApiErrorMessage(error)),
+      },
     );
   }
 
@@ -150,16 +166,16 @@ export default function Cart() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
     flexGrow: 1,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 18,
   },
   title: {
-    fontSize: 26,
+    fontSize: 23,
     color: colors.textPrimary,
   },
   itemCard: {
@@ -167,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 12,
     gap: 14,
     ...cardShadow,
   },
@@ -176,11 +192,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   itemName: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   itemManufacturer: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textPrimary,
   },
   itemStepper: {
@@ -190,7 +206,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   itemQty: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textPrimary,
   },
   itemRight: {
@@ -198,7 +214,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   itemTotal: {
-    fontSize: 15,
+    fontSize: 14,
   },
   empty: {
     alignItems: "center",
@@ -207,10 +223,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   summary: {
-    marginTop: 24,
+    marginTop: 18,
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
     padding: 22,
@@ -221,31 +237,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   summaryLabel: {
-    fontSize: 13,
+    fontSize: 12,
   },
   summaryValue: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   divider: {
     height: 1.5,
     backgroundColor: "#335780",
     opacity: 0.3,
-    marginVertical: 16,
+    marginVertical: 12,
   },
   totalLabel: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textPrimary,
   },
   totalValue: {
-    fontSize: 26,
+    fontSize: 23,
   },
   footer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     paddingTop: 12,
   },
   placeOrderButton: {
-    height: 58,
+    height: 52,
     borderRadius: radius.sm,
     backgroundColor: colors.gold,
     flexDirection: "row",
@@ -257,7 +273,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   placeOrderLabel: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.navy,
   },
 });

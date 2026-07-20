@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CaretLeft, Minus, Plus, SealCheck, ShoppingCartSimple } from "phosphor-react-native";
+import { CaretLeft, ChatCircleText, Minus, Plus, SealCheck, ShoppingCartSimple } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { Badge } from "@/components/Badge";
 import { IconButton } from "@/components/IconButton";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { Text } from "@/components/Text";
+import { useStartConversationMutation } from "@/hooks/useChat";
 import { useAddToCartMutation } from "@/hooks/useCart";
 import { useProductQuery } from "@/hooks/useProducts";
 import { colors } from "@/theme/colors";
@@ -15,15 +18,57 @@ import { radius } from "@/theme/spacing";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: product } = useProductQuery(id);
+  const { data: product, isLoading, isError } = useProductQuery(id);
+
+  if (!product) {
+    return (
+      <View style={[styles.container, styles.loadingState]}>
+        <StatusBar style="dark" />
+        <IconButton
+          icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
+          onPress={() => router.back()}
+          style={styles.backButton}
+        />
+        <Text weight="medium" style={styles.loadingLabel}>
+          {isLoading ? "Loading product…" : isError ? "Couldn't load this product." : "Product not found."}
+        </Text>
+      </View>
+    );
+  }
+
+  return <ProductDetailContent product={product} />;
+}
+
+function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typeof useProductQuery>["data"]> }) {
   const [quantity, setQuantity] = useState(product.baseQty);
   const addToCart = useAddToCartMutation();
+  const startConversation = useStartConversationMutation();
+
+  function handleMessageManufacturer() {
+    if (!product.manufacturerId) return;
+    startConversation.mutate(product.manufacturerId, {
+      onSuccess: (conversation) => router.push(`/chat/${conversation.id}`),
+      onError: (error) => showAlert("Couldn't open chat", getApiErrorMessage(error)),
+    });
+  }
 
   useEffect(() => {
     setQuantity(product.baseQty);
   }, [product.baseQty, product.id]);
 
-  const total = quantity * product.basePrice;
+  // The tier the current quantity falls into drives both the highlight and the price.
+  const activeTier = product.tiers.find(
+    (tier) =>
+      tier.minQty !== undefined &&
+      quantity >= tier.minQty &&
+      (tier.maxQty == null || quantity <= tier.maxQty),
+  );
+  const unitPrice = activeTier?.unitPrice ?? product.basePrice;
+  const total = quantity * unitPrice;
+
+  function handleSelectTier(minQty?: number) {
+    if (minQty !== undefined) setQuantity(minQty);
+  }
 
   function handleAdd() {
     addToCart.mutate({ product, quantity });
@@ -52,28 +97,55 @@ export default function ProductDetail() {
           </Text>
           <SealCheck size={16} color={colors.gold} weight="fill" />
         </View>
-        <Badge label={product.inStock} variant="success" />
+        <View style={styles.stockRow}>
+          <Badge label={product.inStock} variant="success" />
+          {!!product.manufacturerId && (
+            <Pressable
+              onPress={handleMessageManufacturer}
+              style={({ pressed }) => [styles.messageButton, pressed && styles.messageButtonPressed]}
+            >
+              <ChatCircleText size={15} color={colors.navy} weight="fill" />
+              <Text weight="semiBold" color={colors.navy} style={styles.messageLabel}>
+                {startConversation.isPending ? "Opening…" : "Message manufacturer"}
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
         <Text weight="extraBold" style={styles.sectionLabel}>
           WHOLESALE PRICING
         </Text>
         <View style={styles.tiers}>
-          {product.tiers.map((tier) => (
-            <View key={tier.range} style={[styles.tierRow, tier.best && styles.tierRowBest]}>
-              <Text weight="medium" color={tier.best ? colors.white : colors.textPrimary} style={styles.tierRange}>
-                {tier.range}
-              </Text>
-              {tier.best && <Badge label="BEST" variant="gold" />}
-              <Text
-                weight="extraBold"
-                color={tier.best ? colors.gold : colors.textPrimary}
-                style={styles.tierPrice}
+          {product.tiers.map((tier) => {
+            const selected = tier === activeTier;
+            return (
+              <Pressable
+                key={tier.range}
+                onPress={() => handleSelectTier(tier.minQty)}
+                style={({ pressed }) => [
+                  styles.tierRow,
+                  selected && styles.tierRowSelected,
+                  pressed && styles.tierRowPressed,
+                ]}
               >
-                {tier.price}
-              </Text>
-            </View>
-          ))}
+                <Text weight="medium" color={selected ? colors.white : colors.textPrimary} style={styles.tierRange}>
+                  {tier.range}
+                </Text>
+                {tier.best && <Badge label="BEST" variant="gold" />}
+                <Text
+                  weight="extraBold"
+                  color={selected ? colors.gold : colors.textPrimary}
+                  style={styles.tierPrice}
+                >
+                  {tier.price}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
+        <Text weight="regular" color={colors.textMuted} style={styles.tierHint}>
+          Tap a tier to order at that quantity — bigger orders unlock better unit prices.
+        </Text>
 
         <Text weight="medium" style={styles.moqLine}>
           {product.moq} · {product.leadTime}
@@ -115,6 +187,14 @@ const styles = StyleSheet.create({
   imageArea: {
     height: 310,
   },
+  loadingState: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingLabel: {
+    fontSize: 12,
+    color: colors.textPrimary,
+  },
   backButton: {
     position: "absolute",
     left: 20,
@@ -128,12 +208,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 4,
   },
   sheetContent: {
-    padding: 24,
+    padding: 18,
     gap: 12,
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   name: {
-    fontSize: 21,
+    fontSize: 19,
     color: colors.textPrimary,
   },
   manufacturerRow: {
@@ -141,13 +221,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
+  stockRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  messageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 10,
+    borderWidth: 1.5,
+    borderColor: colors.navy,
+    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+  },
+  messageButtonPressed: {
+    opacity: 0.75,
+  },
+  messageLabel: {
+    fontSize: 11,
+  },
   manufacturer: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   sectionLabel: {
-    marginTop: 20,
-    fontSize: 13,
+    marginTop: 16,
+    fontSize: 12,
     color: colors.textPrimary,
   },
   tiers: {
@@ -157,27 +259,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: 50,
-    paddingHorizontal: 16,
+    height: 44,
+    paddingHorizontal: 12,
     backgroundColor: colors.white,
     borderRadius: radius.sm,
   },
-  tierRowBest: {
+  tierRowSelected: {
     backgroundColor: colors.navy,
   },
+  tierRowPressed: {
+    opacity: 0.85,
+  },
+  tierHint: {
+    fontSize: 11,
+  },
   tierRange: {
-    fontSize: 13,
+    fontSize: 12,
   },
   tierPrice: {
-    fontSize: 14,
+    fontSize: 13,
   },
   moqLine: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textPrimary,
   },
   footerRow: {
-    marginTop: 16,
+    marginTop: 12,
     flexDirection: "row",
     gap: 12,
   },
@@ -186,20 +294,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: 120,
-    height: 58,
-    paddingHorizontal: 20,
+    height: 52,
+    paddingHorizontal: 16,
     backgroundColor: colors.white,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
   },
   stepperValue: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   addButton: {
     flex: 1,
-    height: 58,
+    height: 52,
     borderRadius: radius.sm,
     backgroundColor: colors.navy,
     flexDirection: "row",
@@ -208,6 +316,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   addLabel: {
-    fontSize: 15,
+    fontSize: 14,
   },
 });

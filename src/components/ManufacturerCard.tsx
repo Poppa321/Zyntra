@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { colors } from "@/theme/colors";
 import { radius } from "@/theme/spacing";
 import { Text } from "@/components/Text";
-import type { Manufacturer } from "@/data/sampleData";
+import type { Manufacturer } from "@/types/domain";
 
 type ManufacturerCardProps = {
   manufacturer: Manufacturer;
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     backgroundColor: colors.navy,
     borderRadius: radius.sm,
-    padding: 16,
+    padding: 12,
   },
   iconWrap: {
     width: 40,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   name: {
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.white,
   },
   tagline: {
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rating: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.white,
   },
   location: {

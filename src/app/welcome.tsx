@@ -74,22 +74,22 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    paddingHorizontal: 32,
-    paddingTop: 40,
+    paddingHorizontal: 24,
+    paddingTop: 32,
   },
   heading: {
-    fontSize: 44,
-    lineHeight: 52,
+    fontSize: 36,
+    lineHeight: 42,
     color: colors.white,
   },
   subtitle: {
-    marginTop: 24,
-    fontSize: 14,
-    lineHeight: 22,
+    marginTop: 18,
+    fontSize: 13,
+    lineHeight: 20,
     color: colors.textMuted,
   },
   cta: {
-    marginTop: 40,
+    marginTop: 32,
   },
   ctaIcon: {
     width: 32,

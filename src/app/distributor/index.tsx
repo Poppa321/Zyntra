@@ -13,7 +13,7 @@ import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useNotificationsQuery } from "@/hooks/useNotifications";
 import { useProductsQuery, useTopManufacturersQuery } from "@/hooks/useProducts";
-import { categories } from "@/data/sampleData";
+import { categories } from "@/types/domain";
 import { colors } from "@/theme/colors";
 
 export default function Discover() {
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBg,
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 24,
-    gap: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
+    gap: 16,
   },
   heroTop: {
     flexDirection: "row",
@@ -138,11 +138,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 18,
     color: colors.textPrimary,
   },
   subGreeting: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textMuted,
   },
   searchInput: {
@@ -160,38 +160,38 @@ const styles = StyleSheet.create({
     borderColor: colors.navy,
   },
   carouselContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
   },
   chipsRow: {
     flexDirection: "row",
     gap: 8,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 16,
+    paddingHorizontal: 18,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   seeAll: {
-    fontSize: 13,
+    fontSize: 12,
   },
   pressed: {
     opacity: 0.6,
   },
   row: {
     gap: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
   },
   listContent: {
-    paddingBottom: 32,
+    paddingBottom: 24,
     gap: 12,
     flexGrow: 1,
   },
@@ -202,6 +202,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

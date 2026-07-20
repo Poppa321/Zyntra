@@ -1,8 +1,12 @@
 import axios, { AxiosError } from "axios";
 import { Platform } from "react-native";
 
+import type { ApiErrorBody } from "@/api/types";
+
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api";
+
+export const WS_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, "");
 
 export const AUTH_TOKEN_KEY = "zyntra_auth_token";
 
@@ -41,26 +45,31 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   const token = await getStoredToken(AUTH_TOKEN_KEY);
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.set("Authorization", "Bearer " + token);
   }
   return config;
 });
 
-export type ApiErrorBody = {
-  message?: string;
-  error?: string;
-  status?: number;
-};
-
 export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
   if (axios.isAxiosError(error)) {
     const body = (error as AxiosError<ApiErrorBody>).response?.data;
-    return body?.message ?? body?.error ?? error.message ?? fallback;
+    return body?.message ?? fallback;
   }
   if (error instanceof Error) return error.message;
   return fallback;
 }
 
+export function getApiErrorCode(error: unknown): string | undefined {
+  if (axios.isAxiosError(error)) {
+    return (error as AxiosError<ApiErrorBody>).response?.data?.code;
+  }
+  return undefined;
+}
+
 export async function setAuthToken(token: string | null) {
   await writeStoredToken(AUTH_TOKEN_KEY, token);
+}
+
+export async function getAuthToken(): Promise<string | null> {
+  return getStoredToken(AUTH_TOKEN_KEY);
 }

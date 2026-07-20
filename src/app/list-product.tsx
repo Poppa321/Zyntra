@@ -43,17 +43,20 @@ export default function ListAProduct() {
 
   function handlePublish() {
     if (!canPublish) return;
+    const sku = `${name.trim().slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
     createProduct.mutate(
       {
         name,
+        sku,
         description,
         category,
-        unitPrice: Number(price) || 0,
+        baseUnitPrice: Number(price) || 0,
         unit,
-        minOrderQty: Number(minOrderQty) || 1,
-        stockQuantity: Number(stock) || 0,
-        contactPhone: phone,
-        businessLocation: location,
+        moq: Number(minOrderQty) || 1,
+        stockQty: Number(stock) || 0,
+        lowStockThreshold: Math.max(1, Math.round((Number(stock) || 0) * 0.1)),
+        leadTimeDaysMin: 3,
+        leadTimeDaysMax: 5,
       },
       { onSettled: () => router.back() },
     );
@@ -194,17 +197,17 @@ const styles = StyleSheet.create({
     height: 64,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     backgroundColor: colors.cardBg,
-    gap: 16,
+    gap: 12,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   publishButton: {
-    height: 38,
+    height: 34,
     paddingHorizontal: 18,
     borderRadius: radius.sm,
     backgroundColor: colors.gold,
@@ -215,13 +218,13 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   publishLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.navy,
   },
   content: {
-    padding: 24,
-    gap: 16,
-    paddingBottom: 40,
+    padding: 18,
+    gap: 12,
+    paddingBottom: 32,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   categoryGrid: {
@@ -246,7 +249,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   footerRow: {
-    marginTop: 24,
+    marginTop: 18,
     flexDirection: "row",
     gap: 12,
   },

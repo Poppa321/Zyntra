@@ -101,30 +101,30 @@ export default function RoleSelect() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
   },
   heading: {
-    fontSize: 30,
-    lineHeight: 38,
+    fontSize: 26,
+    lineHeight: 34,
     color: colors.textPrimary,
-    marginTop: 24,
+    marginTop: 18,
   },
   subtitle: {
-    marginTop: 16,
-    fontSize: 14,
+    marginTop: 12,
+    fontSize: 13,
     color: colors.textSecondary,
   },
   cards: {
-    marginTop: 32,
-    gap: 16,
+    marginTop: 24,
+    gap: 12,
   },
   card: {
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
     borderWidth: 1.5,
     borderColor: "transparent",
-    padding: 20,
+    padding: 16,
   },
   cardActive: {
     borderColor: colors.gold,
@@ -142,16 +142,16 @@ const styles = StyleSheet.create({
   },
   cardText: {
     marginTop: 12,
-    paddingRight: 40,
+    paddingRight: 32,
     gap: 6,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: colors.textPrimary,
   },
   cardDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 17,
   },
   radio: {
     position: "absolute",
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     borderColor: colors.gold,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingHorizontal: 18,
+    paddingBottom: 18,
   },
 });
