@@ -1,0 +1,65 @@
+package com.zyntra.backend.auth;
+
+import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.LoginRequest;
+import com.zyntra.backend.auth.dto.RegisterRequest;
+import com.zyntra.backend.auth.dto.UpdateProfileRequest;
+import com.zyntra.backend.auth.dto.UserDto;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final AuthService authService;
+    private final RegistrationRateLimiter registrationRateLimiter;
+
+    public AuthController(AuthService authService, RegistrationRateLimiter registrationRateLimiter) {
+        this.authService = authService;
+        this.registrationRateLimiter = registrationRateLimiter;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        String clientIp = clientIp(httpRequest);
+        registrationRateLimiter.checkAllowed(clientIp);
+        AuthResponse response = authService.register(request);
+        registrationRateLimiter.record(clientIp);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // Render (and most PaaS load balancers) sit in front of the app, so the socket peer
+    // is the proxy, not the caller — the real client IP arrives via X-Forwarded-For.
+    private String clientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (StringUtils.hasText(forwardedFor)) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
+    }
+
+    @GetMapping("/me")
+    public UserDto me(Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return authService.me(userId);
+    }
+
+    @PutMapping("/me")
+    public UserDto updateMe(Authentication authentication, @Valid @RequestBody UpdateProfileRequest request) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return authService.updateProfile(userId, request);
+    }
+}

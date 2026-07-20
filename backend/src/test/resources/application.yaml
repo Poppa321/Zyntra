@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+zyntra:
+  jwt:
+    secret: test-only-secret-key-at-least-32-bytes-long-1234567890
+    expiry-minutes: 1440
+  paystack:
+    secret-key: sk_test_dummy
+    base-url: https://api.paystack.co
+    callback-url: zyntra://payment/callback

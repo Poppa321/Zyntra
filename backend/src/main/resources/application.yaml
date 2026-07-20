@@ -1,0 +1,39 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: backend
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 10000
+      max-lifetime: 300000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.default_batch_fetch_size: 20
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    
+zyntra:
+  cors:
+    # Defaults cover local web dev only — set CORS_ALLOWED_ORIGINS in prod
+    # (comma-separated, e.g. "https://app.zyntra.dev,https://*.zyntra.dev").
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8081,http://127.0.0.1:8081}
+  jwt:
+    secret: ${JWT_SECRET}
+    expiry-minutes: 1440
+  paystack:
+    secret-key: ${PAYSTACK_SECRET_KEY}
+    base-url: https://api.paystack.co
+    callback-url: ${PAYSTACK_CALLBACK_URL:zyntra://payment/callback}
+
+server:
+  port: ${PORT:8080}

@@ -1,0 +1,12 @@
+target/
+node_modules/
+.git/
+.env
+.env.*
+*.log
+*.md
+.vscode/
+.idea/
+inspect_db.js
+inspect_table.js
+check_lower.js
