@@ -86,3 +86,9 @@ export function useResetPasswordMutation() {
     mutationFn: (input: { email: string; code: string; password: string }) => authApi.resetPassword(input),
   });
 }
+
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: (input: { currentPassword: string; newPassword: string }) => authApi.changePassword(input),
+  });
+}

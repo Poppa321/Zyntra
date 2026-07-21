@@ -6,6 +6,7 @@ import {
   Bell,
   Buildings,
   CaretRight,
+  Lock,
   MapPin,
   MoonStars,
   SignOut,
@@ -27,9 +28,14 @@ type ProfileScreenProps = {
   roleLabel: string;
 };
 
-const MENU_ITEMS: { label: string; icon: Icon; route: "/profile/business" | "/profile/addresses" | "/notifications" }[] = [
+const MENU_ITEMS: {
+  label: string;
+  icon: Icon;
+  route: "/profile/business" | "/profile/addresses" | "/profile/change-password" | "/notifications";
+}[] = [
   { label: "Business profile", icon: Buildings, route: "/profile/business" },
   { label: "Delivery addresses", icon: MapPin, route: "/profile/addresses" },
+  { label: "Change password", icon: Lock, route: "/profile/change-password" },
   { label: "Notifications", icon: Bell, route: "/notifications" },
 ];
 
