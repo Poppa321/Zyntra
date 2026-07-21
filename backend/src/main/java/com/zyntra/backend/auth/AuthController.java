@@ -1,9 +1,11 @@
 package com.zyntra.backend.auth;
 
 import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.ForgotPasswordRequest;
 import com.zyntra.backend.auth.dto.GoogleAuthRequest;
 import com.zyntra.backend.auth.dto.LoginRequest;
 import com.zyntra.backend.auth.dto.RegisterRequest;
+import com.zyntra.backend.auth.dto.ResetPasswordRequest;
 import com.zyntra.backend.auth.dto.RoleRequest;
 import com.zyntra.backend.auth.dto.UpdateProfileRequest;
 import com.zyntra.backend.auth.dto.UserDto;
@@ -23,10 +25,19 @@ public class AuthController {
 
     private final AuthService authService;
     private final RegistrationRateLimiter registrationRateLimiter;
+    private final PasswordResetService passwordResetService;
+    private final PasswordResetRateLimiter passwordResetRateLimiter;
 
-    public AuthController(AuthService authService, RegistrationRateLimiter registrationRateLimiter) {
+    public AuthController(
+        AuthService authService,
+        RegistrationRateLimiter registrationRateLimiter,
+        PasswordResetService passwordResetService,
+        PasswordResetRateLimiter passwordResetRateLimiter
+    ) {
         this.authService = authService;
         this.registrationRateLimiter = registrationRateLimiter;
+        this.passwordResetService = passwordResetService;
+        this.passwordResetRateLimiter = passwordResetRateLimiter;
     }
 
     @PostMapping("/register")
@@ -51,6 +62,22 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    // Always 204, whether or not the email has an account — the endpoint
+    // must not reveal which emails are registered.
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetRateLimiter.checkAllowed(request.email());
+        passwordResetRateLimiter.record(request.email());
+        passwordResetService.requestReset(request.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.email(), request.code(), request.password());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/google")

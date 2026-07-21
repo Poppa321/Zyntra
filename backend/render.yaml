@@ -21,5 +21,9 @@ services:
         sync: false
       - key: PAYSTACK_CALLBACK_URL
         value: https://zyntra-5wo1.onrender.com/api/payments/redirect
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false

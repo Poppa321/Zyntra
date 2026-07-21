@@ -69,12 +69,17 @@ GOOGLE_CLIENT_ID=web-client-id,ios-client-id,android-client-id
 PAYSTACK_SECRET_KEY=sk_test_xxx
 PAYSTACK_CALLBACK_URL=zyntra://payment/callback
 
+MAIL_USERNAME=your.address@gmail.com
+MAIL_PASSWORD=16-char-app-password
+
 CORS_ALLOWED_ORIGINS=http://localhost:8081
 
 PORT=8080
 ```
 
-Leaving `GOOGLE_CLIENT_ID` blank disables Google sign-in. `JWT_SECRET` and `PAYSTACK_SECRET_KEY` are required at startup.
+Leaving `GOOGLE_CLIENT_ID` blank disables Google sign-in. `JWT_SECRET`, `PAYSTACK_SECRET_KEY`, `MAIL_USERNAME`, and `MAIL_PASSWORD` are required at startup.
+
+`MAIL_USERNAME`/`MAIL_PASSWORD` send "forgot password" emails via Gmail SMTP — no custom domain needed. Setup: enable 2-Step Verification on the Gmail account, then generate an [App Password](https://myaccount.google.com/apppasswords) (Google Account → Security → 2-Step Verification → App passwords) and use that 16-character value as `MAIL_PASSWORD`, not the account's normal login password.
 
 ### Run locally
 
@@ -288,6 +293,7 @@ spring.datasource:        DB_URL / DB_USER / DB_PASSWORD
 spring.jpa:                ddl-auto=validate, open-in-view=false, UTC timezone
 spring.flyway:              baseline-on-migrate=false
 spring.servlet.multipart:   max-file-size / max-request-size = 4MB
+spring.mail:                 MAIL_USERNAME / MAIL_PASSWORD (Gmail SMTP, required)
 zyntra.cors.allowed-origins: CORS_ALLOWED_ORIGINS
 zyntra.jwt.secret:           JWT_SECRET (required)
 zyntra.jwt.expiry-minutes:   1440
