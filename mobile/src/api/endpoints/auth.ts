@@ -32,3 +32,7 @@ export function forgotPassword(email: string) {
 export function resetPassword(payload: { email: string; code: string; password: string }) {
   return apiClient.post<void>("/auth/reset-password", payload).then(() => undefined);
 }
+
+export function changePassword(payload: { currentPassword: string; newPassword: string }) {
+  return apiClient.put<void>("/auth/password", payload).then(() => undefined);
+}
