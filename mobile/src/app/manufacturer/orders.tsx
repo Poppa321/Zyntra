@@ -95,6 +95,14 @@ export default function IncomingOrders() {
           <Text weight="extraBold" style={styles.orderId}>
             #{order.id}
           </Text>
+          <View style={styles.topRowRight}>
+            <Text weight="extraBold" color={colors.gold} style={styles.total}>
+              {order.total}
+            </Text>
+            <Pressable hitSlop={10} onPress={() => handleMessage(order)}>
+              <ChatCircleText size={22} color={colors.textMuted} />
+            </Pressable>
+          </View>
         </View>
         <View style={styles.metaRow}>
           <Text
@@ -105,17 +113,8 @@ export default function IncomingOrders() {
           >
             {order.customer} · {order.location}
           </Text>
-          <View style={styles.topRowRight}>
-            {isNew && <Badge label="NEW" variant="gold" />}
-            <Pressable hitSlop={10} onPress={() => handleMessage(order)}>
-              <ChatCircleText size={30} color={colors.textMuted} />
-            </Pressable>
-          </View>
-            <Text weight="extraBold" color={colors.gold} style={[styles.total,styles.topRowRight]}>
-              {order.total}
-            </Text>
+          {isNew && <Badge label="NEW" variant="gold" />}
         </View>
-
         <Text weight="regular" color={colors.textMuted} style={styles.summary}>
           {order.summary}
         </Text>
@@ -272,7 +271,8 @@ function createStyles(colors: ThemeColors) {
     },
     summary: {
       marginTop: 1,
-      fontSize: 10,
+      fontSize: 13,
+      fontWeight: "bold",
     },
     total: {
       fontSize: 19,

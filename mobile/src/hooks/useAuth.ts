@@ -75,21 +75,14 @@ export async function logout() {
   await setAuthToken(null);
 }
 
-// The backend has no password-reset flow (out of scope per its spec); these
-// simulate success locally so the existing UI screens still work end to end.
-function simulateDelay<T>(value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), 700));
-}
-
 export function useForgotPasswordMutation() {
   return useMutation({
-    mutationFn: (_email: string) => simulateDelay({ message: "Reset link sent" }),
+    mutationFn: (email: string) => authApi.forgotPassword(email),
   });
 }
 
 export function useResetPasswordMutation() {
   return useMutation({
-    mutationFn: (_input: { code: string; password: string }) =>
-      simulateDelay({ message: "Password reset" }),
+    mutationFn: (input: { email: string; code: string; password: string }) => authApi.resetPassword(input),
   });
 }
