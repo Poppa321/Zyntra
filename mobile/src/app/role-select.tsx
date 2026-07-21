@@ -50,7 +50,7 @@ export default function RoleSelect() {
       });
       return;
     }
-    router.push({ pathname: "/(auth)/login", params: { role: selected } });
+    router.push({ pathname: "/(auth)/register", params: { role: selected } });
   }
 
   return (
@@ -138,8 +138,7 @@ function createStyles(colors: ThemeColors) {
     gap: 12,
   },
   card: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     borderWidth: 1.5,
     borderColor: "transparent",
     padding: 16,

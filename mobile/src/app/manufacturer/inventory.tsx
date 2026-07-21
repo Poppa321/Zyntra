@@ -12,29 +12,18 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useInventoryQuery, useUpdateStockMutation } from "@/hooks/useInventory";
-import { useBoostProductMutation } from "@/hooks/usePayments";
 import type { InventoryItem } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 export default function Inventory() {
   const { data } = useInventoryQuery();
   const updateStock = useUpdateStockMutation();
-  const boostProduct = useBoostProductMutation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftQty, setDraftQty] = useState("");
-  const [boostingId, setBoostingId] = useState<string | null>(null);
   const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-
-  function handleBoost(item: InventoryItem) {
-    setBoostingId(item.id);
-    boostProduct.mutate(item.id, {
-      onSettled: () => setBoostingId(null),
-      onError: (error) => showAlert("Couldn't feature this product", getApiErrorMessage(error)),
-    });
-  }
 
   function startEdit(item: InventoryItem) {
     setEditingId(item.id);
@@ -101,13 +90,12 @@ export default function Inventory() {
           {!isEditing && !item.featured && (
             <Pressable
               hitSlop={8}
-              onPress={() => handleBoost(item)}
-              disabled={boostingId === item.id}
+              onPress={() => router.push({ pathname: "/boost/[id]", params: { id: item.id, name: item.name } })}
               style={styles.boostButton}
             >
               <Rocket size={13} color={colors.textPrimary} />
               <Text weight="semiBold" style={styles.boost}>
-                {boostingId === item.id ? "Opening…" : "Feature"}
+                Feature
               </Text>
             </Pressable>
           )}
@@ -210,11 +198,9 @@ function createStyles(colors: ThemeColors) {
   },
   card: {
     flexDirection: "row",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 12,
-    ...cardShadow,
   },
   cardLow: {
     borderWidth: 2,

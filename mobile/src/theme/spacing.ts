@@ -14,12 +14,8 @@ export const radius = {
   sm: 10,
   md: 14,
   pill: 29,
-} as const;
-
-export const cardShadow = {
-  shadowColor: "#0f2643",
-  shadowOpacity: 0.07,
-  shadowRadius: 14,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 2,
+  // Cards are capped sharper than interactive elements (buttons, inputs) —
+  // a deliberate "ledger" contrast, not an oversight; don't reuse this for
+  // non-card surfaces.
+  card: 4,
 } as const;

@@ -116,8 +116,7 @@ function createStyles(colors: ThemeColors) {
       flexGrow: 1,
     },
     card: {
-      backgroundColor: colors.cardBg,
-      borderRadius: radius.sm,
+      borderRadius: radius.card,
       padding: 16,
       gap: 10,
     },
@@ -131,7 +130,7 @@ function createStyles(colors: ThemeColors) {
     body: {
       marginTop: 4,
       fontSize: 13,
-      lineHeight: 20,
+      lineHeight: 16,
       color: colors.textPrimary,
     },
     missingText: {

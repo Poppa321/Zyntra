@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -99,7 +99,8 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
         />
       </View>
 
-      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text weight="extraBold" style={styles.name}>
           {product.name}
         </Text>
@@ -194,6 +195,7 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
           canReview={session?.role === "DISTRIBUTOR"}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -203,6 +205,9 @@ function createStyles(colors: ThemeColors) {
   container: {
     flex: 1,
     backgroundColor: colors.offWhite,
+  },
+  flexOne: {
+    flex: 1,
   },
   imageArea: {
     height: 310,

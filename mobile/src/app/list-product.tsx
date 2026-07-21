@@ -202,7 +202,7 @@ export default function ListAProduct() {
         ))}
       </View>
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {step === 0 && (
             <>
@@ -231,7 +231,7 @@ export default function ListAProduct() {
                 )}
               </ScrollView>
               <Text weight="regular" color={colors.textFaint} style={styles.photoHint}>
-                The first photo becomes the product's main image. You can add more or replace it later from inventory.
+                The first photo becomes the product&apos;s main image. You can add more or replace it later from inventory.
               </Text>
               <TextField
                 label="Image URL (used if no photo is added)"

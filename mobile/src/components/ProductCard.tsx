@@ -3,7 +3,7 @@ import { Star } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Text } from "@/components/Text";
@@ -56,10 +56,8 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
       flex: 1,
-      backgroundColor: colors.cardBg,
-      borderRadius: radius.sm,
+      borderRadius: radius.card,
       padding: 8,
-      ...cardShadow,
     },
     thumbWrap: {
       height: 100,

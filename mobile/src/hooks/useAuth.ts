@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import * as authApi from "@/api/endpoints/auth";
@@ -51,13 +52,22 @@ export function useSessionQuery() {
       if (!token) return null;
       try {
         return await authApi.me();
-      } catch {
-        await setAuthToken(null);
-        return null;
+      } catch (error) {
+        // Only a definitive "this token is invalid" response should log the
+        // user out. Anything else (network drop, timeout, backend 5xx) must
+        // leave the stored token alone — otherwise a transient blip on cold
+        // start signs the user out for good, which is exactly the bug this
+        // used to cause: forced re-login on every app open.
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        if (status === 401 || status === 403) {
+          await setAuthToken(null);
+          return null;
+        }
+        throw error;
       }
     },
     staleTime: 0,
-    retry: false,
+    retry: 2,
   });
 }
 

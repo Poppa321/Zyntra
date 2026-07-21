@@ -53,7 +53,7 @@ export function AuthShell({ title, subtitle, children, showBack }: AuthShellProp
 
       <KeyboardAvoidingView
         style={styles.card}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
           contentContainerStyle={[styles.cardContent, { paddingBottom: insets.bottom + 24 }]}

@@ -3,7 +3,7 @@ import { Factory, SealCheck, Star } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 import type { Manufacturer } from "@/types/domain";
@@ -51,10 +51,8 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
       width: CARD_WIDTH,
-      backgroundColor: colors.cardBg,
-      borderRadius: radius.sm,
+      borderRadius: radius.card,
       overflow: "hidden",
-      ...cardShadow,
     },
     cardPressed: {
       opacity: 0.85,

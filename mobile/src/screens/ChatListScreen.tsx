@@ -12,7 +12,7 @@ import { useSessionQuery } from "@/hooks/useAuth";
 import { useChatLiveUpdates } from "@/hooks/useChat";
 import type { Conversation } from "@/types/domain";
 import { type ThemeColors, useTheme } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 export function ChatListScreen() {
   const { data: user } = useSessionQuery();
@@ -71,7 +71,7 @@ export function ChatListScreen() {
             <View style={styles.emptyWrap}>
               <ChatCircleText size={40} color={colors.textFaint} weight="light" />
               <Text weight="regular" color={colors.textMuted} style={styles.emptyText}>
-                No conversations yet. Tap "New message" to start one with a trading partner.
+                No conversations yet. Tap &quot;New message&quot; to start one with a trading partner.
               </Text>
             </View>
           ) : null
@@ -119,11 +119,9 @@ function createStyles(colors: ThemeColors) {
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 14,
-    ...cardShadow,
   },
   avatar: {
     width: 44,

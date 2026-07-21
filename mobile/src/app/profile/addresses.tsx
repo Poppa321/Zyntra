@@ -19,7 +19,7 @@ import {
 } from "@/hooks/useAddresses";
 import type { Address, AddressLabel } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 const LABELS: AddressLabel[] = ["Warehouse", "Office", "Storefront", "Other"];
 
@@ -106,7 +106,7 @@ export default function AddressesScreen() {
         />
       </View>
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <FlatList
         data={addresses}
         keyExtractor={(item) => item.id}
@@ -175,8 +175,7 @@ function createStyles(colors: ThemeColors) {
     flexGrow: 1,
   },
   form: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 16,
     gap: 14,
     marginBottom: 16,
@@ -199,11 +198,9 @@ function createStyles(colors: ThemeColors) {
   card: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 14,
-    ...cardShadow,
   },
   cardIcon: {
     width: 40,

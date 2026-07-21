@@ -13,8 +13,8 @@ import { Text } from "@/components/Text";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useTrustScoreQuery } from "@/hooks/useManufacturer";
 import { useManufacturerProductsQuery } from "@/hooks/useProducts";
-import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
+import { radius } from "@/theme/spacing";
 
 export default function ManufacturerProfile() {
   const params = useLocalSearchParams<{
@@ -28,6 +28,7 @@ export default function ManufacturerProfile() {
   const { data: products, isLoading } = useManufacturerProductsQuery(params.id);
   const { data: trustScore } = useTrustScoreQuery(params.id);
   const startConversation = useStartConversationMutation();
+  const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -48,7 +49,7 @@ export default function ManufacturerProfile() {
 
   return (
     <ScreenContainer edges={["top"]} topPadding={0}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
@@ -261,11 +262,9 @@ function createStyles(colors: ThemeColors) {
   },
   trustCard: {
     marginHorizontal: 18,
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 16,
     gap: 14,
-    ...cardShadow,
   },
   trustHeader: {
     gap: 4,

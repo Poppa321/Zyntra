@@ -64,7 +64,7 @@ export default function BusinessProfileScreen() {
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <TextField label="Full name" value={fullName} onChangeText={setFullName} autoCapitalize="words" />
         <TextField label="Company name" value={companyName} onChangeText={setCompanyName} autoCapitalize="words" />

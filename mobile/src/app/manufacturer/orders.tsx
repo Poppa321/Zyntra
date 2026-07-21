@@ -20,7 +20,7 @@ import {
 } from "@/hooks/useOrders";
 import type { IncomingOrder, IncomingOrderStatus } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 const NEXT_ACTION: Partial<Record<IncomingOrderStatus, { label: string; icon: typeof Check }>> = {
   new: { label: "Accept", icon: Check },
@@ -79,7 +79,7 @@ export default function IncomingOrders() {
     const action = NEXT_ACTION[order.status];
 
     return (
-      <View style={[styles.card, !isNew && styles.cardShadow]}>
+      <View style={styles.card}>
         <View style={styles.topRow}>
           <Text weight="extraBold" style={styles.orderId}>
             #{order.id}
@@ -194,12 +194,8 @@ function createStyles(colors: ThemeColors) {
     color: colors.textPrimary,
   },
   card: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 11,
-  },
-  cardShadow: {
-    ...cardShadow,
   },
   topRow: {
     flexDirection: "row",

@@ -12,6 +12,7 @@ import {
 } from "@expo-google-fonts/noto-sans";
 
 import { queryClient } from "@/lib/queryClient";
+import { GoogleAuthProvider } from "@/lib/googleAuth";
 import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +38,9 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <RootLayoutNav />
+        <GoogleAuthProvider>
+          <RootLayoutNav />
+        </GoogleAuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

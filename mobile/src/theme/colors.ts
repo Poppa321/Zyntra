@@ -27,5 +27,6 @@ export const colors = {
   textFaint: "#b2b8bd",
 
   error: "#d64545",
+  errorMuted: "rgba(214,69,69,0.08)",
   success: "#2f9e5b",
 } as const;

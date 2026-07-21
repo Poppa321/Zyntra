@@ -42,7 +42,7 @@ export function ProductThumb({ uri, size, iconSize = 24, style }: ProductThumbPr
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     base: {
-      borderRadius: radius.sm,
+      borderRadius: radius.card,
       overflow: "hidden",
       alignItems: "center",
       justifyContent: "center",

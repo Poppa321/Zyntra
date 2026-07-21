@@ -15,7 +15,7 @@ import { useStartConversationMutation } from "@/hooks/useChat";
 import { useIncomingOrdersQuery } from "@/hooks/useOrders";
 import { useTopManufacturersQuery } from "@/hooks/useProducts";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 type Counterparty = {
   id: string;
@@ -141,10 +141,8 @@ function createStyles(colors: ThemeColors) {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
-    ...cardShadow,
   },
   cardPressed: {
     opacity: 0.75,

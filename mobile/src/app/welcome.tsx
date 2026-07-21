@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,6 +10,7 @@ import { Button } from "@/components/Button";
 import { Logo } from "@/components/Logo";
 import { Text } from "@/components/Text";
 import { colors } from "@/theme/colors";
+import { radius } from "@/theme/spacing";
 
 const welcomeBg = require("@/../assets/images/auth/welcome-bg.jpg");
 
@@ -56,6 +57,18 @@ export default function Welcome() {
           }
           style={styles.cta}
         />
+
+        {/* Custom pressable, not the shared Button: Button's "outline" variant
+            is theme-reactive and turns dark-on-dark here in dark mode, since
+            this screen's background is fixed navyDark in both themes. */}
+        <Pressable
+          onPress={() => router.push("/(auth)/login")}
+          style={({ pressed }) => [styles.signInCta, pressed && styles.signInCtaPressed]}
+        >
+          <Text weight="semiBold" style={styles.signInCtaLabel}>
+            Continue to Sign In
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -92,6 +105,21 @@ const styles = StyleSheet.create({
   },
   cta: {
     marginTop: 32,
+  },
+  signInCta: {
+    marginTop: 12,
+    height: 50,
+    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  signInCtaPressed: {
+    opacity: 0.85,
+  },
+  signInCtaLabel: {
+    fontSize: 15,
+    color: colors.navy,
   },
   ctaIcon: {
     width: 32,

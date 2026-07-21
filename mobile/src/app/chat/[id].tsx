@@ -70,15 +70,20 @@ export default function ChatThread() {
         </Text>
       </View>
 
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        inverted
-        contentContainerStyle={styles.messagesContent}
-      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <FlatList
+          style={styles.flex}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          inverted
+          contentContainerStyle={styles.messagesContent}
+        />
 
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <SafeAreaView edges={["bottom"]} style={styles.inputSafeArea}>
           <View style={styles.inputRow}>
             <View style={styles.inputField}>
@@ -103,6 +108,9 @@ export default function ChatThread() {
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   header: {
     height: 64,
     flexDirection: "row",

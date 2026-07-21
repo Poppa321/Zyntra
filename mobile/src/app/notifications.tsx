@@ -22,7 +22,7 @@ import {
 } from "@/hooks/useNotifications";
 import type { Notification, NotificationType } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 const TYPE_ICON: Record<NotificationType, Icon> = {
   order: ClipboardText,
@@ -49,7 +49,7 @@ export default function Notifications() {
           if (!item.read) markRead.mutate(item.id);
           router.push(`/notifications/${item.id}`);
         }}
-        style={({ pressed }) => [styles.card, !item.read && styles.cardUnread, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >
         <View style={[styles.iconWrap, !item.read && styles.iconWrapUnread]}>
           <IconComponent
@@ -143,13 +143,9 @@ function createStyles(colors: ThemeColors) {
   },
   card: {
     flexDirection: "row",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 12,
-  },
-  cardUnread: {
-    ...cardShadow,
   },
   pressed: {
     opacity: 0.75,
@@ -187,7 +183,7 @@ function createStyles(colors: ThemeColors) {
   },
   text: {
     fontSize: 11,
-    lineHeight: 17,
+    lineHeight: 14,
   },
   timestamp: {
     marginTop: 2,

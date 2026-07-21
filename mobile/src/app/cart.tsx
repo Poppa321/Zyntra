@@ -14,7 +14,7 @@ import { useCartQuery, useRemoveFromCartMutation, useUpdateCartItemQuantityMutat
 import { usePlaceOrderMutation } from "@/hooks/useOrders";
 import type { CartItem } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 export default function Cart() {
   const { items, subtotal, deliveryFee, total } = useCartQuery();
@@ -186,11 +186,9 @@ function createStyles(colors: ThemeColors) {
   itemCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 14,
-    ...cardShadow,
   },
   itemInfo: {
     flex: 1,
@@ -232,10 +230,8 @@ function createStyles(colors: ThemeColors) {
   },
   summary: {
     marginTop: 18,
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 16,
-    ...cardShadow,
   },
   summaryRow: {
     flexDirection: "row",

@@ -191,7 +191,7 @@ export default function OrderTracking() {
                 </View>
                 <View style={styles.itemRow}>
                   <Text weight="bold" style={styles.itemName}>
-                    You'll receive
+                    You&apos;ll receive
                   </Text>
                   <Text weight="extraBold" color={colors.success} style={styles.itemTotal}>
                     ₵{order.payoutAmount.toLocaleString()}
@@ -331,8 +331,7 @@ function createStyles(colors: ThemeColors) {
   },
   itemsCard: {
     marginTop: 18,
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 10,
   },
@@ -394,8 +393,7 @@ function createStyles(colors: ThemeColors) {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 16,
   },
   etaLabel: {
@@ -411,8 +409,7 @@ function createStyles(colors: ThemeColors) {
   },
   historyCard: {
     marginTop: 12,
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 12,
     gap: 10,
   },

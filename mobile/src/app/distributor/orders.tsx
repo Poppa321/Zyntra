@@ -14,7 +14,7 @@ import { useDistributorOrdersQuery } from "@/hooks/useOrders";
 import type { OrderGroup } from "@/api/types";
 import type { Order } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
-import { cardShadow, radius } from "@/theme/spacing";
+import { radius } from "@/theme/spacing";
 
 const TABS: { key: OrderGroup; label: string }[] = [
   { key: "active", label: "Active" },
@@ -173,10 +173,8 @@ function createStyles(colors: ThemeColors) {
     fontSize: 12,
   },
   card: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radius.sm,
+    borderRadius: radius.card,
     padding: 11,
-    ...cardShadow,
   },
   cardTopRow: {
     flexDirection: "row",

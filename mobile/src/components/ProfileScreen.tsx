@@ -71,7 +71,7 @@ export function ProfileScreen({ name, roleLabel }: ProfileScreenProps) {
 
   return (
     <ScreenContainer edges={["top"]} topPadding={0}>
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? "light" : "dark"} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.avatar}>
@@ -134,16 +134,17 @@ export function ProfileScreen({ name, roleLabel }: ProfileScreenProps) {
             </View>
           </View>
 
-          <Pressable
-            onPress={handleSignOut}
-            style={({ pressed }) => [styles.group, styles.menuRow, pressed && styles.menuRowPressed]}
-          >
-            <View style={styles.menuLabelRow}>
-              <SignOut size={18} color={colors.error} />
-              <Text weight="semiBold" color={colors.error} style={styles.menuLabel}>
-                Sign out
-              </Text>
-            </View>
+          <Pressable onPress={handleSignOut} style={styles.signOutSpacer}>
+            {({ pressed }) => (
+              <View style={[styles.signOutRow, pressed && styles.signOutRowPressed]}>
+                <View style={styles.menuLabelRow}>
+                  <SignOut size={18} color={pressed ? colors.pureWhite : colors.error} />
+                  <Text weight="semiBold" color={pressed ? colors.pureWhite : colors.error} style={styles.menuLabel}>
+                    Sign out
+                  </Text>
+                </View>
+              </View>
+            )}
           </Pressable>
         </View>
       </ScrollView>
@@ -196,7 +197,7 @@ function createStyles(colors: ThemeColors) {
     },
     group: {
       backgroundColor: colors.cardBg,
-      borderRadius: radius.sm,
+      borderRadius: radius.card,
       overflow: "hidden",
     },
     menuRow: {
@@ -227,6 +228,20 @@ function createStyles(colors: ThemeColors) {
     menuLabel: {
       fontSize: 13,
       color: colors.textPrimary,
+    },
+    signOutSpacer: {
+      marginTop: 28,
+    },
+    signOutRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      height: 54,
+      borderRadius: radius.card,
+      backgroundColor: colors.errorMuted,
+    },
+    signOutRowPressed: {
+      backgroundColor: colors.error,
     },
   });
 }

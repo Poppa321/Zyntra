@@ -21,5 +21,6 @@ export const darkColors = {
   textFaint: "#5c6875",
 
   error: "#ef6a63",
+  errorMuted: "rgba(239,106,99,0.14)",
   success: "#3fbd77",
 } as const;
