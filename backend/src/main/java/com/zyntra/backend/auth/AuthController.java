@@ -1,6 +1,7 @@
 package com.zyntra.backend.auth;
 
 import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.ChangePasswordRequest;
 import com.zyntra.backend.auth.dto.ForgotPasswordRequest;
 import com.zyntra.backend.auth.dto.GoogleAuthRequest;
 import com.zyntra.backend.auth.dto.LoginRequest;
@@ -101,5 +102,12 @@ public class AuthController {
     public UserDto updateMe(Authentication authentication, @Valid @RequestBody UpdateProfileRequest request) {
         UUID userId = UUID.fromString(authentication.getName());
         return authService.updateProfile(userId, request);
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+        UUID userId = UUID.fromString(authentication.getName());
+        authService.changePassword(userId, request);
+        return ResponseEntity.noContent().build();
     }
 }

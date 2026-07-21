@@ -1,11 +1,13 @@
 package com.zyntra.backend.auth;
 
 import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.ChangePasswordRequest;
 import com.zyntra.backend.auth.dto.GoogleAuthRequest;
 import com.zyntra.backend.auth.dto.LoginRequest;
 import com.zyntra.backend.auth.dto.RegisterRequest;
 import com.zyntra.backend.auth.dto.UpdateProfileRequest;
 import com.zyntra.backend.auth.dto.UserDto;
+import com.zyntra.backend.common.exception.BadRequestException;
 import com.zyntra.backend.common.exception.ConflictException;
 import com.zyntra.backend.common.exception.NotFoundException;
 import com.zyntra.backend.common.exception.UnauthenticatedException;
@@ -108,6 +110,20 @@ public class AuthService {
     public UserDto me(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
         return UserDto.from(user);
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+
+        if (user.getPasswordHash() == null) {
+            throw new BadRequestException("NO_PASSWORD_SET", "This account signed up with Google and has no password to change");
+        }
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("INVALID_CURRENT_PASSWORD", "Current password is incorrect");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
     }
 
     @Transactional
