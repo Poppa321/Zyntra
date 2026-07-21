@@ -20,6 +20,6 @@ services:
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: PAYSTACK_CALLBACK_URL
-        value: zyntra://payment/callback
+        value: https://zyntra-5wo1.onrender.com/api/payments/redirect
       - key: CORS_ALLOWED_ORIGINS
         sync: false

@@ -31,7 +31,11 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_GET_PATHS = {
         "/api/products/**",
-        "/api/manufacturers/**"
+        "/api/manufacturers/**",
+        // Paystack's hosted checkout redirects here on completion (no auth
+        // context available — it's a bare browser GET), which then forwards
+        // into the app via the zyntra:// scheme. See PaymentRedirectController.
+        "/api/payments/redirect"
     };
 
     private static final String[] PUBLIC_PATHS = {

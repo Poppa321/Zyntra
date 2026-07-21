@@ -43,7 +43,10 @@ zyntra:
   paystack:
     secret-key: ${PAYSTACK_SECRET_KEY}
     base-url: https://api.paystack.co
-    callback-url: ${PAYSTACK_CALLBACK_URL:zyntra://payment/callback}
+    # Must be http(s) — Paystack's hosted checkout won't reliably redirect to a
+    # bare custom scheme. PaymentRedirectController bridges from here into the
+    # app's zyntra://payment/callback deep link.
+    callback-url: ${PAYSTACK_CALLBACK_URL:https://zyntra-5wo1.onrender.com/api/payments/redirect}
 
 server:
   port: ${PORT:8080}
