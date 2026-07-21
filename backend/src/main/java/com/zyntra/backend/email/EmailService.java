@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +22,11 @@ public class EmailService {
         this.fromAddress = fromAddress;
     }
 
+    // Async so the request thread (the "forgot password" endpoint) doesn't
+    // block on the SMTP round-trip — Gmail's connect + STARTTLS + auth +
+    // send often takes a second or more, and there's no reason the caller
+    // should wait on it since the response is identical either way.
+    @Async
     public void sendPasswordResetCode(String toEmail, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
