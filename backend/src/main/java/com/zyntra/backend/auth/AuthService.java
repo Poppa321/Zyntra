@@ -1,6 +1,7 @@
 package com.zyntra.backend.auth;
 
 import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.GoogleAuthRequest;
 import com.zyntra.backend.auth.dto.LoginRequest;
 import com.zyntra.backend.auth.dto.RegisterRequest;
 import com.zyntra.backend.auth.dto.UpdateProfileRequest;
@@ -8,6 +9,7 @@ import com.zyntra.backend.auth.dto.UserDto;
 import com.zyntra.backend.common.exception.ConflictException;
 import com.zyntra.backend.common.exception.NotFoundException;
 import com.zyntra.backend.common.exception.UnauthenticatedException;
+import com.zyntra.backend.user.Role;
 import com.zyntra.backend.user.User;
 import com.zyntra.backend.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,13 +25,15 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final LoginAttemptService loginAttemptService;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                        LoginAttemptService loginAttemptService) {
+                        LoginAttemptService loginAttemptService, GoogleTokenVerifier googleTokenVerifier) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.loginAttemptService = loginAttemptService;
+        this.googleTokenVerifier = googleTokenVerifier;
     }
 
     @Transactional
@@ -67,6 +71,40 @@ public class AuthService {
         return new AuthResponse(jwtService.generateToken(user), UserDto.from(user));
     }
 
+    @Transactional
+    public AuthResponse googleAuth(GoogleAuthRequest request) {
+        GoogleTokenVerifier.GoogleIdentity identity = googleTokenVerifier.verify(request.idToken());
+
+        User user = userRepository.findByGoogleId(identity.googleId())
+            .or(() -> userRepository.findByEmail(identity.email()))
+            .orElse(null);
+
+        if (user == null) {
+            user = User.builder()
+                .email(identity.email())
+                .fullName(identity.name())
+                .googleId(identity.googleId())
+                .role(request.role())
+                .verified(true)
+                .darkMode(false)
+                .build();
+            user = userRepository.save(user);
+        } else if (user.getGoogleId() == null) {
+            // An account originally created with email/password is now also
+            // reachable via "Sign in with Google" for the same address.
+            user.setGoogleId(identity.googleId());
+        }
+
+        return new AuthResponse(jwtService.generateToken(user), UserDto.from(user));
+    }
+
+    @Transactional
+    public UserDto setRole(UUID userId, Role role) {
+        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        user.setRole(role);
+        return UserDto.from(user);
+    }
+
     public UserDto me(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
         return UserDto.from(user);
@@ -80,6 +118,9 @@ public class AuthService {
         user.setPhone(request.phone());
         user.setCity(request.city());
         user.setDescription(request.description());
+        if (request.darkMode() != null) {
+            user.setDarkMode(request.darkMode());
+        }
         return UserDto.from(user);
     }
 }

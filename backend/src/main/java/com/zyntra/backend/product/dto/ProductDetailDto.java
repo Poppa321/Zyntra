@@ -25,9 +25,12 @@ public record ProductDetailDto(
     UUID manufacturerId,
     String manufacturerName,
     boolean verified,
-    List<PriceTierDto> priceTiers
+    List<PriceTierDto> priceTiers,
+    boolean featured,
+    double averageRating,
+    long reviewCount
 ) {
-    public static ProductDetailDto from(Product product) {
+    public static ProductDetailDto from(Product product, double averageRating, long reviewCount) {
         List<PriceTierDto> tiers = product.getPriceTiers().stream()
             .sorted(Comparator.comparingInt(t -> t.getMinQty()))
             .map(PriceTierDto::from)
@@ -51,7 +54,10 @@ public record ProductDetailDto(
             product.getManufacturer().getId(),
             product.getManufacturer().getBusinessName(),
             product.getManufacturer().isVerified(),
-            tiers
+            tiers,
+            product.isFeatured(),
+            averageRating,
+            reviewCount
         );
     }
 }

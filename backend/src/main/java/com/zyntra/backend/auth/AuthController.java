@@ -1,8 +1,10 @@
 package com.zyntra.backend.auth;
 
 import com.zyntra.backend.auth.dto.AuthResponse;
+import com.zyntra.backend.auth.dto.GoogleAuthRequest;
 import com.zyntra.backend.auth.dto.LoginRequest;
 import com.zyntra.backend.auth.dto.RegisterRequest;
+import com.zyntra.backend.auth.dto.RoleRequest;
 import com.zyntra.backend.auth.dto.UpdateProfileRequest;
 import com.zyntra.backend.auth.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +51,17 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/google")
+    public AuthResponse google(@Valid @RequestBody GoogleAuthRequest request) {
+        return authService.googleAuth(request);
+    }
+
+    @PutMapping("/role")
+    public UserDto setRole(Authentication authentication, @Valid @RequestBody RoleRequest request) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return authService.setRole(userId, request.role());
     }
 
     @GetMapping("/me")

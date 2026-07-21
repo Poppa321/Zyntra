@@ -39,7 +39,9 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "image_url", length = 500)
+    // TEXT, not a short VARCHAR — images are uploaded and stored as base64
+    // data URIs (see ProductImageService), not externally hosted URLs.
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "base_unit_price", nullable = false, precision = 12, scale = 2)
@@ -66,8 +68,17 @@ public class Product {
     @Column(nullable = false)
     private boolean active = true;
 
+    // Monetization: manufacturers pay to boost a product into "Featured"
+    // placement for a fixed window (see ProductBoostService). Null/past = not featured.
+    @Column(name = "featured_until")
+    private Instant featuredUntil;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    public boolean isFeatured() {
+        return featuredUntil != null && featuredUntil.isAfter(Instant.now());
+    }
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PriceTier> priceTiers = new ArrayList<>();

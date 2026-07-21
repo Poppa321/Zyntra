@@ -63,6 +63,12 @@ public class Order {
     @Column(name = "delivery_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal deliveryFee;
 
+    // Platform commission on this order — deducted from the manufacturer's
+    // payout, not added to the distributor's total (subtotal + deliveryFee
+    // is still exactly what the distributor pays).
+    @Column(name = "platform_fee_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal platformFeeAmount = BigDecimal.ZERO;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
 

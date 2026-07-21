@@ -21,7 +21,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: false
-    
+  servlet:
+    multipart:
+      max-file-size: 4MB
+      max-request-size: 4MB
+
 zyntra:
   cors:
     # Defaults cover local web dev only — set CORS_ALLOWED_ORIGINS in prod
@@ -30,6 +34,12 @@ zyntra:
   jwt:
     secret: ${JWT_SECRET}
     expiry-minutes: 1440
+  google:
+    # Comma-separated Web/iOS/Android OAuth client IDs from Google Cloud Console
+    # — the ID token's "aud" claim must match one of these, or the token is
+    # rejected. Left blank, Google sign-in is rejected outright rather than
+    # skipping the audience check.
+    client-id: ${GOOGLE_CLIENT_ID:}
   paystack:
     secret-key: ${PAYSTACK_SECRET_KEY}
     base-url: https://api.paystack.co

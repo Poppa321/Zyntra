@@ -21,10 +21,13 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductReviewRepository productReviewRepository;
 
-    public ProductService(ProductRepository productRepository, UserRepository userRepository) {
+    public ProductService(ProductRepository productRepository, UserRepository userRepository,
+                           ProductReviewRepository productReviewRepository) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.productReviewRepository = productReviewRepository;
     }
 
     public PageResponse<ProductCardDto> search(String search, String category, UUID manufacturerId, Pageable pageable) {
@@ -35,7 +38,9 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDetailDto getDetail(UUID id) {
         Product product = productRepository.findByIdAndActiveTrue(id).orElseThrow(NotFoundException::new);
-        return ProductDetailDto.from(product);
+        double averageRating = productReviewRepository.averageRating(id);
+        long reviewCount = productReviewRepository.countByProductId(id);
+        return ProductDetailDto.from(product, averageRating, reviewCount);
     }
 
     @Transactional
@@ -52,7 +57,7 @@ public class ProductService {
         product.replaceTiers(toEntities(request.tiers()));
 
         product = productRepository.save(product);
-        return ProductDetailDto.from(product);
+        return ProductDetailDto.from(product, 0.0, 0L);
     }
 
     @Transactional
@@ -67,7 +72,7 @@ public class ProductService {
             request.lowStockThreshold(), request.leadTimeDaysMin(), request.leadTimeDaysMax());
         product.replaceTiers(toEntities(request.tiers()));
 
-        return ProductDetailDto.from(product);
+        return ProductDetailDto.from(product, productReviewRepository.averageRating(id), productReviewRepository.countByProductId(id));
     }
 
     @Transactional
@@ -75,7 +80,7 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(NotFoundException::new);
         requireOwner(product, manufacturerId);
         product.setStockQty(stockQty);
-        return ProductDetailDto.from(product);
+        return ProductDetailDto.from(product, productReviewRepository.averageRating(id), productReviewRepository.countByProductId(id));
     }
 
     @Transactional

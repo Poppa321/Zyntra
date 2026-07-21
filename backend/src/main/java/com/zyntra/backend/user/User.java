@@ -26,8 +26,12 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    // Nullable — Google-authenticated accounts never set a local password.
+    @Column(name = "password_hash")
     private String passwordHash;
+
+    @Column(name = "google_id", unique = true)
+    private String googleId;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;

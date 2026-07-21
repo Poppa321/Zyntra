@@ -9,6 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.List;
 
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleAuthentication(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiError.of(401, "UNAUTHENTICATED", "Authentication required"));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.badRequest()
+            .body(ApiError.of(400, "FILE_TOO_LARGE", "Image is too large — max 4MB"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

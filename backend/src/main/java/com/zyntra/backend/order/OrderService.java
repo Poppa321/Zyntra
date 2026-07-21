@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
@@ -33,6 +34,12 @@ import java.util.UUID;
 public class OrderService {
 
     private static final BigDecimal DELIVERY_FEE = new BigDecimal("1200.00");
+
+    // Platform commission — deducted from the manufacturer's payout on top of
+    // (not added to) what the distributor pays. Applied to subtotal only,
+    // not the delivery fee, since delivery is a logistics pass-through, not
+    // manufacturer revenue.
+    private static final BigDecimal PLATFORM_FEE_RATE = new BigDecimal("0.05");
 
     private static final Set<OrderStatus> ACTIVE_STATUSES = Set.of(
         OrderStatus.PENDING, OrderStatus.ACCEPTED, OrderStatus.IN_TRANSIT, OrderStatus.OUT_FOR_DELIVERY);
@@ -104,6 +111,7 @@ public class OrderService {
 
         order.setSubtotal(subtotal);
         order.setDeliveryFee(DELIVERY_FEE);
+        order.setPlatformFeeAmount(subtotal.multiply(PLATFORM_FEE_RATE).setScale(2, RoundingMode.HALF_UP));
         order.setTotal(subtotal.add(DELIVERY_FEE));
         order.appendHistory(OrderStatus.PENDING, "Order placed");
 

@@ -8,6 +8,7 @@ public record UpdateProfileRequest(
     @Size(max = 160) String businessName,
     @Size(max = 30) String phone,
     @Size(max = 80) String city,
-    @Size(max = 2000) String description
+    @Size(max = 2000) String description,
+    Boolean darkMode
 ) {
 }

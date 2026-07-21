@@ -30,12 +30,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_GET_PATHS = {
-        "/api/products/**"
+        "/api/products/**",
+        "/api/manufacturers/**"
     };
 
     private static final String[] PUBLIC_PATHS = {
         "/api/auth/register",
         "/api/auth/login",
+        "/api/auth/google",
         "/swagger-ui.html",
         "/swagger-ui/**",
         "/v3/api-docs/**",

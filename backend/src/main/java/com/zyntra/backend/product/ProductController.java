@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,9 +20,11 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductImageService productImageService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, ProductImageService productImageService) {
         this.productService = productService;
+        this.productImageService = productImageService;
     }
 
     @GetMapping
@@ -67,6 +70,13 @@ public class ProductController {
     public ProductDetailDto updateStock(Authentication authentication, @PathVariable UUID id, @Valid @RequestBody StockUpdateRequest request) {
         UUID manufacturerId = UUID.fromString(authentication.getName());
         return productService.updateStock(id, manufacturerId, request.stockQty());
+    }
+
+    @PostMapping("/{id}/photo")
+    @PreAuthorize("hasRole('MANUFACTURER')")
+    public ProductDetailDto uploadPhoto(Authentication authentication, @PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+        UUID manufacturerId = UUID.fromString(authentication.getName());
+        return productImageService.upload(id, manufacturerId, file);
     }
 
     @DeleteMapping("/{id}")

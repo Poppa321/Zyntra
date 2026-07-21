@@ -28,8 +28,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query(value = "SELECT nextval('order_number_seq')", nativeQuery = true)
     long nextOrderNumber();
 
+    // Net of the platform's commission — this is what the manufacturer actually
+    // gets paid, not the gross order total the distributor paid.
     @Query("""
-        SELECT COALESCE(SUM(o.total), 0) FROM Order o
+        SELECT COALESCE(SUM(o.total - o.platformFeeAmount), 0) FROM Order o
         WHERE o.manufacturer.id = :manufacturerId
           AND o.status IN :statuses
           AND o.createdAt >= :since
@@ -39,4 +41,15 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     long countByManufacturerId(UUID manufacturerId);
 
     List<Order> findTop5ByManufacturerIdOrderByCreatedAtDesc(UUID manufacturerId);
+
+    List<Order> findByManufacturerIdAndStatusIn(UUID manufacturerId, Collection<OrderStatus> statuses);
+
+    @Query("""
+        SELECT o FROM Order o JOIN o.items i
+        WHERE o.distributor.id = :distributorId
+          AND i.productId = :productId
+          AND o.status = com.zyntra.backend.order.OrderStatus.DELIVERED
+        ORDER BY o.createdAt DESC
+        """)
+    List<Order> findDeliveredOrdersForProduct(@Param("distributorId") UUID distributorId, @Param("productId") UUID productId);
 }

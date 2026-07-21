@@ -14,7 +14,8 @@ public record ProductCardDto(
     boolean verified,
     BigDecimal baseUnitPrice,
     int moq,
-    String unit
+    String unit,
+    boolean featured
 ) {
     public static ProductCardDto from(Product product) {
         return new ProductCardDto(
@@ -26,7 +27,8 @@ public record ProductCardDto(
             product.getManufacturer().isVerified(),
             product.getBaseUnitPrice(),
             product.getMoq(),
-            product.getUnit()
+            product.getUnit(),
+            product.isFeatured()
         );
     }
 }
