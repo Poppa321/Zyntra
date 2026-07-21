@@ -26,7 +26,7 @@ import java.util.UUID;
 @Service
 public class ProductBoostService {
 
-    private static final long BOOST_PRICE_KOBO = 5_000_00; // ₵50.00
+    private static final long BOOST_PRICE_KOBO = 50_00; // ₵50.00
     private static final Duration BOOST_DURATION = Duration.of(7, ChronoUnit.DAYS);
 
     private final ProductRepository productRepository;
