@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router } from "expo-router";
 import { CheckCircle } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
 import { Text } from "@/components/Text";
@@ -18,13 +20,16 @@ export default function ForgotPassword() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleSend = () => {
-    forgotPassword.mutate(email, { onSuccess: () => setSent(true) });
+    forgotPassword.mutate(email, {
+      onSuccess: () => setSent(true),
+      onError: (error) => showAlert("Couldn't send reset code", getApiErrorMessage(error)),
+    });
   };
 
   return (
     <AuthShell
       title="Forgot password?"
-      subtitle="Enter your email and we'll send you a reset link"
+      subtitle="Enter your email and we'll send you a reset code"
       showBack
     >
       <TextField
@@ -41,13 +46,13 @@ export default function ForgotPassword() {
         <View style={styles.sentRow}>
           <CheckCircle size={16} color={colors.success} weight="fill" />
           <Text weight="medium" color={colors.success} style={styles.sentText}>
-            Reset link sent — check your inbox.
+            Reset code sent — check your inbox.
           </Text>
         </View>
       )}
 
       <Button
-        label={sent ? "Resend link" : "Send Reset Link"}
+        label={sent ? "Resend code" : "Send Reset Code"}
         onPress={handleSend}
         loading={forgotPassword.isPending}
         disabled={!email}
@@ -67,7 +72,7 @@ export default function ForgotPassword() {
         <Button
           label="I have a reset code"
           variant="outline"
-          onPress={() => router.push("/(auth)/reset-password")}
+          onPress={() => router.push({ pathname: "/(auth)/reset-password", params: { email } })}
         />
       )}
     </AuthShell>

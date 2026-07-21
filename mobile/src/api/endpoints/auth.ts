@@ -24,3 +24,11 @@ export function me() {
 export function updateMe(payload: UpdateProfilePayload) {
   return apiClient.put<UserDto>("/auth/me", payload).then((res) => res.data);
 }
+
+export function forgotPassword(email: string) {
+  return apiClient.post<void>("/auth/forgot-password", { email }).then(() => undefined);
+}
+
+export function resetPassword(payload: { email: string; code: string; password: string }) {
+  return apiClient.post<void>("/auth/reset-password", payload).then(() => undefined);
+}

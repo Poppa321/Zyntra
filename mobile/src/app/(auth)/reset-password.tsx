@@ -2,14 +2,17 @@ import { useState } from "react";
 import { StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
 import { TextField } from "@/components/TextField";
 import { useResetPasswordMutation } from "@/hooks/useAuth";
 
 export default function ResetPassword() {
-  const { token } = useLocalSearchParams<{ token?: string }>();
+  const { token, email: emailParam } = useLocalSearchParams<{ token?: string; email?: string }>();
 
+  const [email, setEmail] = useState(emailParam ?? "");
   const [code, setCode] = useState(token ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,13 +23,16 @@ export default function ResetPassword() {
       ? "Passwords do not match"
       : undefined;
 
-  const canSubmit = code.length > 0 && password.length >= 8 && !error;
+  const canSubmit = email.length > 0 && code.length > 0 && password.length >= 8 && !error;
 
   const handleReset = () => {
     if (!canSubmit) return;
     resetPassword.mutate(
-      { code, password },
-      { onSuccess: () => router.replace("/(auth)/login") },
+      { email, code, password },
+      {
+        onSuccess: () => router.replace("/(auth)/login"),
+        onError: (err) => showAlert("Couldn't reset password", getApiErrorMessage(err)),
+      },
     );
   };
 
@@ -36,6 +42,14 @@ export default function ResetPassword() {
       subtitle="Enter the code we sent you and a new password"
       showBack
     >
+      <TextField
+        label="Email address"
+        placeholder="you@company.com"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
       <TextField
         label="Reset code"
         placeholder="6-digit code"
