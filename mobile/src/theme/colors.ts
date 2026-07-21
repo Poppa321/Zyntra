@@ -18,6 +18,11 @@ export const colors = {
   platinum: "#e5e4e2",
   offWhite: "#f2f1ef",
   cardBg: "#f7f6f4",
+  // A visibly-tinted gold wash — noticeably darker than cardBg's near-white
+  // tint, for surfaces that want the brand accent rather than a neutral card
+  // fill (e.g. incoming-order rows, where a quiet accent helps them stand
+  // apart from plain list rows).
+  accentTint: "rgba(234,170,52,0.16)",
   border: "#d9d8d5",
 
   textPrimary: "#0f2743",

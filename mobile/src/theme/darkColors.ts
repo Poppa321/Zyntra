@@ -12,6 +12,7 @@ export const darkColors = {
   platinum: "#1c3958",
   offWhite: "#122842",
   cardBg: "#132a44",
+  accentTint: "rgba(234,170,52,0.14)",
   border: "#294863",
 
   textPrimary: "#f5f4f2",

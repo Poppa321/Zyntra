@@ -185,6 +185,7 @@ export type OrderDto = {
   manufacturerBusinessName?: string;
   status: OrderStatusDto;
   deliveryAddress?: string;
+  itemsSummary?: string;
   subtotal: number;
   deliveryFee: number;
   platformFeeAmount: number;

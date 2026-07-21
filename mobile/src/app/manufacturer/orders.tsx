@@ -19,10 +19,16 @@ import {
   useShipOrderMutation,
 } from "@/hooks/useOrders";
 import type { IncomingOrder, IncomingOrderStatus } from "@/types/domain";
-import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
+import {
+  type ThemeColors,
+  useTheme,
+  useThemeColors,
+} from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
-const NEXT_ACTION: Partial<Record<IncomingOrderStatus, { label: string; icon: typeof Check }>> = {
+const NEXT_ACTION: Partial<
+  Record<IncomingOrderStatus, { label: string; icon: typeof Check }>
+> = {
   new: { label: "Accept", icon: Check },
   accepted: { label: "Mark Shipped", icon: Truck },
   shipped: { label: "Out for Delivery", icon: Truck },
@@ -44,12 +50,14 @@ export default function IncomingOrders() {
   function handleMessage(order: IncomingOrder) {
     startConversation.mutate(order.counterpartyId, {
       onSuccess: (conversation) => router.push(`/chat/${conversation.id}`),
-      onError: (error) => showAlert("Couldn't open chat", getApiErrorMessage(error)),
+      onError: (error) =>
+        showAlert("Couldn't open chat", getApiErrorMessage(error)),
     });
   }
 
   function handlePrimaryAction(order: IncomingOrder) {
-    const onError = (error: unknown) => showAlert("Action failed", getApiErrorMessage(error));
+    const onError = (error: unknown) =>
+      showAlert("Action failed", getApiErrorMessage(error));
     switch (order.status) {
       case "new":
         acceptOrder.mutate(order.orderId, { onError });
@@ -69,7 +77,10 @@ export default function IncomingOrders() {
   function handleDecline(order: IncomingOrder) {
     declineOrder.mutate(
       { orderId: order.orderId, reason: "Unable to fulfill this order" },
-      { onError: (error) => showAlert("Action failed", getApiErrorMessage(error)) },
+      {
+        onError: (error) =>
+          showAlert("Action failed", getApiErrorMessage(error)),
+      },
     );
   }
 
@@ -84,44 +95,75 @@ export default function IncomingOrders() {
           <Text weight="extraBold" style={styles.orderId}>
             #{order.id}
           </Text>
+        </View>
+        <View style={styles.metaRow}>
+          <Text
+            weight="medium"
+            color={colors.textMuted}
+            style={styles.customer}
+            numberOfLines={1}
+          >
+            {order.customer} · {order.location}
+          </Text>
           <View style={styles.topRowRight}>
             {isNew && <Badge label="NEW" variant="gold" />}
             <Pressable hitSlop={10} onPress={() => handleMessage(order)}>
-              <ChatCircleText size={18} color={colors.textMuted} />
+              <ChatCircleText size={30} color={colors.textMuted} />
             </Pressable>
           </View>
+            <Text weight="extraBold" color={colors.gold} style={[styles.total,styles.topRowRight]}>
+              {order.total}
+            </Text>
         </View>
-        <Text weight="medium" color={colors.textMuted} style={styles.customer}>
-          {order.customer} · {order.location}
-        </Text>
+
         <Text weight="regular" color={colors.textMuted} style={styles.summary}>
           {order.summary}
-        </Text>
-        <Text weight="extraBold" color={colors.gold} style={styles.total}>
-          {order.total}
         </Text>
 
         <View style={styles.actionsRow}>
           {action && (
-            <Pressable style={isNew ? styles.acceptButton : styles.shipButton} onPress={() => handlePrimaryAction(order)}>
-              <action.icon size={14} color={isNew ? colors.navy : colors.pureWhite} weight={isNew ? "bold" : "fill"} />
-              <Text weight="bold" color={isNew ? colors.navy : colors.pureWhite} style={styles.actionLabel}>
+            <Pressable
+              style={isNew ? styles.acceptButton : styles.shipButton}
+              onPress={() => handlePrimaryAction(order)}
+            >
+              <action.icon
+                size={14}
+                color={isNew ? colors.navy : colors.pureWhite}
+                weight={isNew ? "bold" : "fill"}
+              />
+              <Text
+                weight="bold"
+                color={isNew ? colors.navy : colors.pureWhite}
+                style={styles.actionLabel}
+              >
                 {action.label}
               </Text>
             </Pressable>
           )}
           {isDelivered && (
-            <Text weight="semiBold" color={colors.success} style={styles.actionLabel}>
+            <Text
+              weight="semiBold"
+              color={colors.success}
+              style={styles.actionLabel}
+            >
               Delivered
             </Text>
           )}
           <Pressable
             hitSlop={8}
             style={styles.secondaryButton}
-            onPress={() => (isNew ? handleDecline(order) : router.push(`/order-tracking/${order.orderId}`))}
+            onPress={() =>
+              isNew
+                ? handleDecline(order)
+                : router.push(`/order-tracking/${order.orderId}`)
+            }
           >
             {isNew && <X size={13} color={colors.textMuted} weight="bold" />}
-            <Text weight="semiBold" color={isNew ? colors.textMuted : colors.textPrimary} style={styles.secondaryAction}>
+            <Text
+              weight="semiBold"
+              color={isNew ? colors.textMuted : colors.textPrimary}
+              style={styles.secondaryAction}
+            >
               {isNew ? "Decline" : "View details"}
             </Text>
           </Pressable>
@@ -138,7 +180,7 @@ export default function IncomingOrders() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.content}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 6 }} />}
         ListHeaderComponent={
           <Text weight="extraBold" style={styles.title}>
             INCOMING{"\n"}ORDERS
@@ -151,8 +193,13 @@ export default function IncomingOrders() {
             <Text weight="bold" style={styles.emptyTitle}>
               No incoming orders
             </Text>
-            <Text weight="regular" color={colors.textMuted} style={styles.emptyBody}>
-              When a distributor places an order for your products, it will appear here for you to accept and fulfill.
+            <Text
+              weight="regular"
+              color={colors.textMuted}
+              style={styles.emptyBody}
+            >
+              When a distributor places an order for your products, it will
+              appear here for you to accept and fulfill.
             </Text>
           </View>
         }
@@ -163,100 +210,107 @@ export default function IncomingOrders() {
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-  content: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 32,
-    flexGrow: 1,
-  },
-  emptyWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-    gap: 8,
-  },
-  emptyTitle: {
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  emptyBody: {
-    fontSize: 12,
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  headerWrap: {
-    marginBottom: 18,
-  },
-  title: {
-    fontSize: 24,
-    lineHeight: 30,
-    color: colors.textPrimary,
-  },
-  card: {
-    borderRadius: radius.card,
-    padding: 11,
-  },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  orderId: {
-    fontSize: 13,
-    color: colors.textPrimary,
-  },
-  topRowRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  customer: {
-    marginTop: 3,
-    fontSize: 11,
-  },
-  summary: {
-    marginTop: 2,
-    fontSize: 10,
-  },
-  total: {
-    marginTop: 4,
-    fontSize: 15,
-  },
-  actionsRow: {
-    marginTop: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  acceptButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    height: 34,
-    paddingHorizontal: 14,
-    borderRadius: radius.sm,
-    backgroundColor: colors.gold,
-  },
-  shipButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    height: 34,
-    paddingHorizontal: 10,
-    borderRadius: radius.sm,
-    backgroundColor: colors.navy,
-  },
-  actionLabel: {
-    fontSize: 11,
-  },
-  secondaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  secondaryAction: {
-    fontSize: 11,
-  },
+    content: {
+      paddingHorizontal: 18,
+      paddingTop: 12,
+      paddingBottom: 32,
+      flexGrow: 1,
+    },
+    emptyWrap: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 60,
+      paddingHorizontal: 24,
+      gap: 8,
+    },
+    emptyTitle: {
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    emptyBody: {
+      fontSize: 12,
+      textAlign: "center",
+      lineHeight: 18,
+    },
+    headerWrap: {
+      marginBottom: 18,
+    },
+    title: {
+      fontSize: 24,
+      lineHeight: 30,
+      color: colors.textPrimary,
+    },
+    card: {
+      backgroundColor: colors.accentTint,
+      borderRadius: radius.card,
+      padding: 8,
+    },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    orderId: {
+      fontSize: 13,
+      color: colors.textPrimary,
+    },
+    topRowRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    metaRow: {
+      marginTop: 2,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+    },
+    customer: {
+      flex: 1,
+      fontSize: 11,
+    },
+    summary: {
+      marginTop: 1,
+      fontSize: 10,
+    },
+    total: {
+      fontSize: 19,
+    },
+    actionsRow: {
+      marginTop: 6,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    acceptButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      height: 34,
+      paddingHorizontal: 14,
+      borderRadius: radius.sm,
+      backgroundColor: colors.gold,
+    },
+    shipButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      height: 34,
+      paddingHorizontal: 10,
+      borderRadius: radius.sm,
+      backgroundColor: colors.navy,
+    },
+    actionLabel: {
+      fontSize: 11,
+    },
+    secondaryButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    secondaryAction: {
+      fontSize: 11,
+    },
   });
 }

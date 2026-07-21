@@ -138,8 +138,8 @@ export function mapIncomingOrder(dto: OrderDto): IncomingOrder {
     orderId: dto.id,
     counterpartyId: dto.distributorId,
     customer: dto.distributorBusinessName ?? "",
-    location: "",
-    summary: dto.deliveryAddress ?? "",
+    location: dto.deliveryAddress ?? "",
+    summary: dto.itemsSummary ?? "",
     total: formatCurrency(dto.total),
     status: INCOMING_STATUS_MAP[dto.status] ?? "new",
   };
