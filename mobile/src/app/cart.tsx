@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -12,7 +13,7 @@ import { useAddressesQuery } from "@/hooks/useAddresses";
 import { useCartQuery, useRemoveFromCartMutation, useUpdateCartItemQuantityMutation } from "@/hooks/useCart";
 import { usePlaceOrderMutation } from "@/hooks/useOrders";
 import type { CartItem } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 export default function Cart() {
@@ -21,6 +22,9 @@ export default function Cart() {
   const removeItem = useRemoveFromCartMutation();
   const placeOrder = usePlaceOrderMutation();
   const { data: addresses } = useAddressesQuery();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handlePlaceOrder() {
     const defaultAddress = addresses.find((a) => a.isDefault) ?? addresses[0];
@@ -45,7 +49,7 @@ export default function Cart() {
     const step = item.product.baseQty;
     return (
       <View style={styles.itemCard}>
-        <ProductThumb size={64} iconSize={22} />
+        <ProductThumb size={64} iconSize={22} uri={item.product.imageUrl} />
         <View style={styles.itemInfo}>
           <Text weight="semiBold" style={styles.itemName} numberOfLines={1}>
             {item.product.name}
@@ -91,8 +95,8 @@ export default function Cart() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top", "bottom"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.product.id}
@@ -164,7 +168,8 @@ export default function Cart() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 16,
@@ -229,7 +234,8 @@ const styles = StyleSheet.create({
     marginTop: 18,
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 22,
+    padding: 16,
+    ...cardShadow,
   },
   summaryRow: {
     flexDirection: "row",
@@ -245,8 +251,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1.5,
-    backgroundColor: "#335780",
-    opacity: 0.3,
+    backgroundColor: colors.border,
     marginVertical: 12,
   },
   totalLabel: {
@@ -276,4 +281,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.navy,
   },
-});
+  });
+}

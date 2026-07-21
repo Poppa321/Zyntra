@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "zyntra",
+    "scheme": ["zyntra", "com.festxsteam.zyntra"],
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/icon.png"
@@ -33,7 +33,13 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Zyntra needs access to your photos so you can add images to your product listings."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

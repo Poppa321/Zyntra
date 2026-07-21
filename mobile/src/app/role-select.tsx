@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Check, Factory, Truck, type Icon } from "phosphor-react-native";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { Button } from "@/components/Button";
 import { Logo } from "@/components/Logo";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { colors } from "@/theme/colors";
+import { useSessionQuery, useSetRoleMutation } from "@/hooks/useAuth";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 type Role = "manufacturer" | "distributor";
@@ -30,10 +33,29 @@ const ROLES: { id: Role; title: string; description: string; icon: Icon }[] = [
 
 export default function RoleSelect() {
   const [selected, setSelected] = useState<Role>("manufacturer");
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { data: user } = useSessionQuery();
+  const setRole = useSetRoleMutation();
+
+  // A Google sign-in can land here already authenticated but without a role
+  // (first-time Google user) — in that case "Continue" sets the role on the
+  // existing account instead of routing back through the login form.
+  function handleContinue() {
+    if (user) {
+      setRole.mutate(selected === "manufacturer" ? "MANUFACTURER" : "DISTRIBUTOR", {
+        onSuccess: () => router.replace(selected === "manufacturer" ? "/manufacturer" : "/distributor"),
+        onError: (error) => showAlert("Couldn't save your role", getApiErrorMessage(error)),
+      });
+      return;
+    }
+    router.push({ pathname: "/(auth)/login", params: { role: selected } });
+  }
 
   return (
-    <ScreenContainer background={colors.white}>
-      <StatusBar style="dark" />
+    <ScreenContainer>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.content}>
         <Logo variant="light" size="sm" />
 
@@ -87,18 +109,14 @@ export default function RoleSelect() {
       </View>
 
       <View style={styles.footer}>
-        <Button
-          label="Continue"
-          onPress={() =>
-            router.push({ pathname: "/(auth)/login", params: { role: selected } })
-          }
-        />
+        <Button label="Continue" onPress={handleContinue} loading={setRole.isPending} />
       </View>
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 18,
@@ -174,4 +192,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: 18,
   },
-});
+  });
+}

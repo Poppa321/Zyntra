@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Check, Package, PencilSimple, Plus, X } from "phosphor-react-native";
+import { Check, Package, PencilSimple, Plus, Rocket, X } from "phosphor-react-native";
 
 import { getApiErrorMessage } from "@/api/client";
 import { showAlert } from "@/lib/alert";
@@ -12,15 +12,29 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useInventoryQuery, useUpdateStockMutation } from "@/hooks/useInventory";
+import { useBoostProductMutation } from "@/hooks/usePayments";
 import type { InventoryItem } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 export default function Inventory() {
   const { data } = useInventoryQuery();
   const updateStock = useUpdateStockMutation();
+  const boostProduct = useBoostProductMutation();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftQty, setDraftQty] = useState("");
+  const [boostingId, setBoostingId] = useState<string | null>(null);
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  function handleBoost(item: InventoryItem) {
+    setBoostingId(item.id);
+    boostProduct.mutate(item.id, {
+      onSettled: () => setBoostingId(null),
+      onError: (error) => showAlert("Couldn't feature this product", getApiErrorMessage(error)),
+    });
+  }
 
   function startEdit(item: InventoryItem) {
     setEditingId(item.id);
@@ -72,7 +86,7 @@ export default function Inventory() {
           ) : (
             <Text
               weight="extraBold"
-              color={item.low ? colors.textPrimary : "#26994d"}
+              color={item.low ? colors.textPrimary : colors.success}
               style={styles.units}
             >
               {item.units}
@@ -80,7 +94,23 @@ export default function Inventory() {
           )}
         </View>
         <View style={styles.actions}>
-          {item.low && !isEditing && <Badge label="LOW" variant="gold" />}
+          <View style={styles.badgeRow}>
+            {item.featured && <Badge label="FEATURED" variant="gold" />}
+            {item.low && !isEditing && <Badge label="LOW" variant="gold" />}
+          </View>
+          {!isEditing && !item.featured && (
+            <Pressable
+              hitSlop={8}
+              onPress={() => handleBoost(item)}
+              disabled={boostingId === item.id}
+              style={styles.boostButton}
+            >
+              <Rocket size={13} color={colors.textPrimary} />
+              <Text weight="semiBold" style={styles.boost}>
+                {boostingId === item.id ? "Opening…" : "Feature"}
+              </Text>
+            </Pressable>
+          )}
           {isEditing ? (
             <View style={styles.editActions}>
               <Pressable hitSlop={8} onPress={cancelEdit} disabled={isSaving} style={styles.editIconButton}>
@@ -104,8 +134,8 @@ export default function Inventory() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
@@ -145,7 +175,8 @@ export default function Inventory() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 16,
@@ -208,6 +239,20 @@ const styles = StyleSheet.create({
   actions: {
     alignItems: "flex-end",
     justifyContent: "space-between",
+    gap: 6,
+  },
+  badgeRow: {
+    alignItems: "flex-end",
+    gap: 6,
+  },
+  boostButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  boost: {
+    fontSize: 12,
+    color: colors.textPrimary,
   },
   editButton: {
     flexDirection: "row",
@@ -249,4 +294,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     backgroundColor: colors.gold,
   },
-});
+  });
+}

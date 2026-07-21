@@ -5,22 +5,23 @@ import { StatusBar } from "expo-status-bar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   useFonts,
-  SpaceGrotesk_400Regular,
-  SpaceGrotesk_500Medium,
-  SpaceGrotesk_600SemiBold,
-  SpaceGrotesk_700Bold,
-} from "@expo-google-fonts/space-grotesk";
+  NotoSans_400Regular,
+  NotoSans_500Medium,
+  NotoSans_600SemiBold,
+  NotoSans_700Bold,
+} from "@expo-google-fonts/noto-sans";
 
 import { queryClient } from "@/lib/queryClient";
+import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    SpaceGrotesk_400Regular,
-    SpaceGrotesk_500Medium,
-    SpaceGrotesk_600SemiBold,
-    SpaceGrotesk_700Bold,
+    NotoSans_400Regular,
+    NotoSans_500Medium,
+    NotoSans_600SemiBold,
+    NotoSans_700Bold,
   });
 
   useEffect(() => {
@@ -35,10 +36,26 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="light" />
+      <ThemeProvider>
+        <RootLayoutNav />
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
+
+// Default status bar contrast follows the active theme — most screens are
+// light-background even in "dark mode" toggles for content, so this is the
+// sensible fallback; screens with their own dark hero/header still render
+// their own <StatusBar> to override it.
+function RootLayoutNav() {
+  const { isDark } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="list-product" options={{ presentation: "modal" }} />
       </Stack>
-    </QueryClientProvider>
+    </>
   );
 }

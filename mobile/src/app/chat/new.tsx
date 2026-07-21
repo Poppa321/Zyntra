@@ -14,7 +14,7 @@ import { useSessionQuery } from "@/hooks/useAuth";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useIncomingOrdersQuery } from "@/hooks/useOrders";
 import { useTopManufacturersQuery } from "@/hooks/useProducts";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 type Counterparty = {
@@ -33,6 +33,9 @@ export default function NewMessage() {
   const { data: manufacturers } = useTopManufacturersQuery();
   const { data: incomingOrders } = useIncomingOrdersQuery();
   const startConversation = useStartConversationMutation();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const counterparties = useMemo<Counterparty[]>(() => {
     if (isManufacturer) {
@@ -61,8 +64,8 @@ export default function NewMessage() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -93,7 +96,7 @@ export default function NewMessage() {
             style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
           >
             <View style={styles.avatar}>
-              <Storefront size={18} color={colors.white} weight="fill" />
+              <Storefront size={18} color={colors.pureWhite} weight="fill" />
             </View>
             <Text weight="bold" style={styles.name} numberOfLines={1}>
               {item.name}
@@ -118,7 +121,8 @@ export default function NewMessage() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 8,
@@ -170,4 +174,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
   },
-});
+  });
+}

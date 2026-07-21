@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -9,9 +9,10 @@ import {
 } from "react-native";
 import { Eye, EyeSlash } from "phosphor-react-native";
 
-import { colors } from "@/theme/colors";
+
 import { radius } from "@/theme/spacing";
 import { fonts } from "@/theme/typography";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 
 type TextFieldProps = TextInputProps & {
@@ -34,6 +35,8 @@ export function TextField({
   ...rest
 }: TextFieldProps) {
   const [hidden, setHidden] = useState(!!secureTextEntry);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.wrapper}>
@@ -77,7 +80,8 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   wrapper: {
     gap: 8,
   },
@@ -121,4 +125,5 @@ const styles = StyleSheet.create({
   leftIcon: {
     marginRight: 10,
   },
-});
+  });
+}

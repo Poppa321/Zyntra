@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import * as authApi from "@/api/endpoints/auth";
 import { mapBusinessProfile } from "@/api/mappers";
+import type { UserDto } from "@/api/types";
 import type { BusinessProfile } from "@/types/domain";
 
 const PROFILE_KEY = ["business-profile"];
@@ -40,6 +41,25 @@ export function useUpdateProfileMutation() {
     onSuccess: (profile) => {
       queryClient.setQueryData<BusinessProfile>(PROFILE_KEY, profile);
       queryClient.invalidateQueries({ queryKey: ["session"] });
+    },
+  });
+}
+
+/** Persists the dark-mode preference against the same /auth/me endpoint the rest of the profile form uses. */
+export function useUpdateDarkModeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { darkMode: boolean; user: UserDto }) =>
+      authApi.updateMe({
+        fullName: input.user.fullName,
+        businessName: input.user.businessName,
+        phone: input.user.phone,
+        city: input.user.city,
+        description: input.user.description,
+        darkMode: input.darkMode,
+      }),
+    onSuccess: (user) => {
+      queryClient.setQueryData(["session"], user);
     },
   });
 }

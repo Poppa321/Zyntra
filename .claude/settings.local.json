@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-ChildItem mobile\\\\src -Recurse -File | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\('C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\mobile\\\\src\\\\',''\\) })"
+      "PowerShell(Get-ChildItem mobile\\\\src -Recurse -File | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\('C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\mobile\\\\src\\\\',''\\) })",
+      "Bash(robocopy /L \"C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\mobile\\\\src\" \"C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\.claude\\\\worktrees\\\\agent-aee79d5f4ecda1632\\\\mobile\\\\src\" /E)",
+      "Bash(robocopy \"C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\mobile\\\\src\\\\theme\" \"C:\\\\Users\\\\festu\\\\Documents\\\\Dev_Projects\\\\zyntra\\\\.claude\\\\worktrees\\\\agent-aee79d5f4ecda1632\\\\mobile\\\\src\\\\theme\" /E)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(npx tsc *)",
+      "Bash(./node_modules/.bin/tsc --noEmit -p .)",
+      "Bash(./mvnw -q -o compile)"
     ]
   }
 }

@@ -19,6 +19,7 @@ export type UpdateProfilePayload = {
   phone?: string;
   city?: string;
   description?: string;
+  darkMode?: boolean;
 };
 
 export type AuthResponseDto = {
@@ -39,6 +40,11 @@ export type RegisterPayload = {
   phone?: string;
   city?: string;
   role: Role;
+};
+
+export type GoogleAuthPayload = {
+  idToken: string;
+  role?: Role;
 };
 
 export type PriceTierDto = {
@@ -64,6 +70,7 @@ export type ProductCardDto = {
   baseUnitPrice: number;
   moq: number;
   unit: string;
+  featured: boolean;
 };
 
 export type ProductDetailDto = {
@@ -85,6 +92,42 @@ export type ProductDetailDto = {
   manufacturerName: string;
   verified: boolean;
   priceTiers: PriceTierDto[];
+  featured: boolean;
+  averageRating: number;
+  reviewCount: number;
+};
+
+export type ReviewDto = {
+  id: string;
+  distributorId: string;
+  distributorName: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+};
+
+export type CreateReviewPayload = {
+  rating: number;
+  comment?: string;
+};
+
+export type BoostProductResponse = {
+  authorizationUrl: string;
+  reference: string;
+};
+
+export type BoostStatusDto = {
+  status: PaymentStatusDto;
+  featuredUntil?: string;
+};
+
+export type TrustScoreDto = {
+  verified: boolean;
+  memberSince: string;
+  totalOrders: number;
+  completedOrders: number;
+  onTimeDeliveryRate?: number;
+  completionRate?: number;
 };
 
 export type ProductCreateRequest = {
@@ -144,6 +187,8 @@ export type OrderDto = {
   deliveryAddress?: string;
   subtotal: number;
   deliveryFee: number;
+  platformFeeAmount: number;
+  payoutAmount: number;
   total: number;
   eta?: string;
   createdAt: string;

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -10,19 +11,21 @@ import { useConversationsQuery } from "@/hooks/useChat";
 import { useSessionQuery } from "@/hooks/useAuth";
 import { useChatLiveUpdates } from "@/hooks/useChat";
 import type { Conversation } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 export function ChatListScreen() {
   const { data: user } = useSessionQuery();
   const { data: conversations, isLoading } = useConversationsQuery();
   useChatLiveUpdates(user?.id);
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function renderItem({ item }: { item: Conversation }) {
     return (
       <Pressable style={styles.card} onPress={() => router.push(`/chat/${item.id}`)}>
         <View style={styles.avatar}>
-          <ChatCircleText size={20} color={colors.white} weight="fill" />
+          <ChatCircleText size={20} color={colors.pureWhite} weight="fill" />
         </View>
         <View style={styles.info}>
           <Text weight="bold" style={styles.name} numberOfLines={1}>
@@ -38,8 +41,8 @@ export function ChatListScreen() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.id}
@@ -55,8 +58,8 @@ export function ChatListScreen() {
               onPress={() => router.push("/chat/new")}
               style={({ pressed }) => [styles.newButton, pressed && styles.newButtonPressed]}
             >
-              <NotePencil size={15} color={colors.white} weight="bold" />
-              <Text weight="semiBold" color={colors.white} style={styles.newButtonLabel}>
+              <NotePencil size={15} color={colors.pureWhite} weight="bold" />
+              <Text weight="semiBold" color={colors.pureWhite} style={styles.newButtonLabel}>
                 New message
               </Text>
             </Pressable>
@@ -78,7 +81,8 @@ export function ChatListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 12,
@@ -152,4 +156,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
   },
-});
+  });
+}

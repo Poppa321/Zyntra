@@ -12,13 +12,16 @@ import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useProductsQuery, useTopManufacturersQuery } from "@/hooks/useProducts";
 import { categories } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 
 export default function Browse() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const { data: allProducts } = useProductsQuery(activeCategory);
   const { data: allManufacturers } = useTopManufacturersQuery();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const normalizedQuery = query.trim().toLowerCase();
   const isSearching = normalizedQuery.length > 0;
@@ -45,8 +48,8 @@ export default function Browse() {
   const showManufacturers = manufacturers.length > 0;
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
@@ -102,7 +105,24 @@ export default function Browse() {
                   decelerationRate="fast"
                   contentContainerStyle={styles.carouselContent}
                   ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-                  renderItem={({ item }) => <ManufacturerCard manufacturer={item} />}
+                  renderItem={({ item }) => (
+                    <ManufacturerCard
+                      manufacturer={item}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/manufacturer-profile/[id]",
+                          params: {
+                            id: item.id,
+                            name: item.name,
+                            location: item.location,
+                            tagline: item.tagline,
+                            verified: String(item.verified),
+                            rating: String(item.rating),
+                          },
+                        })
+                      }
+                    />
+                  )}
                 />
               </>
             )}
@@ -130,7 +150,8 @@ export default function Browse() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   header: {
     paddingHorizontal: 18,
     paddingTop: 16,
@@ -181,4 +202,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
   },
-});
+  });
+}

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { useMemo, useState } from "react";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CaretLeft, MapPin, Plus, Trash, X } from "phosphor-react-native";
@@ -18,7 +18,7 @@ import {
   useSetDefaultAddressMutation,
 } from "@/hooks/useAddresses";
 import type { Address, AddressLabel } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 const LABELS: AddressLabel[] = ["Warehouse", "Office", "Storefront", "Other"];
@@ -35,6 +35,9 @@ export default function AddressesScreen() {
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
   const [phone, setPhone] = useState("");
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const canAdd = line1.trim().length > 0 && city.trim().length > 0 && phone.trim().length > 0;
 
@@ -57,7 +60,7 @@ export default function AddressesScreen() {
     return (
       <View style={styles.card}>
         <View style={styles.cardIcon}>
-          <MapPin size={20} color={colors.white} weight="fill" />
+          <MapPin size={20} color={colors.pureWhite} weight="fill" />
         </View>
         <View style={styles.cardInfo}>
           <View style={styles.cardTitleRow}>
@@ -88,8 +91,8 @@ export default function AddressesScreen() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top", "bottom"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.header}>
         <IconButton icon={<CaretLeft size={18} color={colors.textPrimary} weight="bold" />} onPress={() => router.back()} />
         <Text weight="bold" style={styles.headerTitle}>
@@ -103,6 +106,7 @@ export default function AddressesScreen() {
         />
       </View>
 
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <FlatList
         data={addresses}
         keyExtractor={(item) => item.id}
@@ -142,11 +146,16 @@ export default function AddressesScreen() {
           ) : null
         }
       />
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   header: {
     height: 64,
     flexDirection: "row",
@@ -234,4 +243,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
   },
-});
+  });
+}

@@ -2,6 +2,7 @@ import { StyleSheet, View, type ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 
 function SpeedIcon({ color = colors.gold }: { color?: string }) {
@@ -69,8 +70,16 @@ const SIZE_SCALE = { sm: 0.7, md: 0.85, lg: 1 };
 
 export function Logo({ variant = "dark", type = "wordmark", size = "lg", style }: LogoProps) {
   const scale = SIZE_SCALE[size];
-  const zColor = variant === "dark" ? colors.gold : colors.textPrimary;
-  const restColor = variant === "dark" ? colors.white : colors.textPrimary;
+  // "dark" variant is for use against a fixed dark/navy brand surface
+  // (welcome hero, AuthShell hero) — those surfaces don't flip with theme,
+  // so its colors stay pinned to the static light palette's literal gold/
+  // white. "light" variant is for use on a themed screen surface, so its
+  // ink color must track the active theme (textPrimary already flips to a
+  // light ink in dark mode) or it'd render dark-on-dark once the screen's
+  // background goes dark.
+  const themeColors = useThemeColors();
+  const zColor = variant === "dark" ? colors.gold : themeColors.textPrimary;
+  const restColor = variant === "dark" ? colors.white : themeColors.textPrimary;
   const fontSize = 36 * scale;
 
   return (

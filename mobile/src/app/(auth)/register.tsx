@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 
+import { getApiErrorMessage } from "@/api/client";
+import { showAlert } from "@/lib/alert";
 import { AuthShell } from "@/components/AuthShell";
 import { Button } from "@/components/Button";
+import { Divider } from "@/components/Divider";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useRegisterMutation } from "@/hooks/useAuth";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 
 export default function Register() {
   const { role } = useLocalSearchParams<{ role?: string }>();
@@ -18,6 +22,8 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const register = useRegisterMutation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const error =
     confirmPassword.length > 0 && confirmPassword !== password
@@ -45,6 +51,7 @@ export default function Register() {
         onSuccess: () => {
           router.replace(role === "distributor" ? "/distributor" : "/manufacturer");
         },
+        onError: (error) => showAlert("Registration failed", getApiErrorMessage(error)),
       },
     );
   };
@@ -106,6 +113,15 @@ export default function Register() {
         disabled={!canSubmit}
       />
 
+      <Divider label="or continue with" />
+
+      <GoogleSignInButton
+        role={role === "distributor" ? "DISTRIBUTOR" : "MANUFACTURER"}
+        onSuccess={(result) =>
+          router.replace(result.role === "DISTRIBUTOR" ? "/distributor" : "/manufacturer")
+        }
+        onError={(message) => showAlert("Registration failed", message)}
+      />
 
       <View style={styles.footer}>
         <Text weight="medium" color={colors.textSecondary} style={styles.footerText}>
@@ -123,13 +139,15 @@ export default function Register() {
   );
 }
 
-const styles = StyleSheet.create({
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 8,
-  },
-  footerText: {
-    fontSize: 13,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    footer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      marginTop: 8,
+    },
+    footerText: {
+      fontSize: 13,
+    },
+  });
+}

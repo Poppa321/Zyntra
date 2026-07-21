@@ -1,9 +1,13 @@
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 
 export function Divider({ label }: { label: string }) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.row}>
       <View style={styles.line} />
@@ -15,18 +19,20 @@ export function Divider({ label }: { label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  label: {
-    fontSize: 11,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    line: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    label: {
+      fontSize: 11,
+    },
+  });
+}

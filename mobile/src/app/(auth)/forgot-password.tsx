@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router } from "expo-router";
 import { CheckCircle } from "phosphor-react-native";
@@ -8,12 +8,14 @@ import { Button } from "@/components/Button";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useForgotPasswordMutation } from "@/hooks/useAuth";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const forgotPassword = useForgotPasswordMutation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleSend = () => {
     forgotPassword.mutate(email, { onSuccess: () => setSent(true) });
@@ -72,21 +74,23 @@ export default function ForgotPassword() {
   );
 }
 
-const styles = StyleSheet.create({
-  sentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  sentText: {
-    fontSize: 12,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 8,
-  },
-  footerText: {
-    fontSize: 13,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    sentRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    sentText: {
+      fontSize: 12,
+    },
+    footer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      marginTop: 8,
+    },
+    footerText: {
+      fontSize: 13,
+    },
+  });
+}

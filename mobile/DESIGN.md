@@ -9,7 +9,7 @@ colors:
   white: "#ffffff"
   platinum: "#e5e4e2"
   off-white: "#f2f1ef"
-  card-bg: "#e5e4e2"
+  card-bg: "#f7f6f4"
   border: "#d9d8d5"
   text-primary: "#0f2743"
   text-secondary: "#525c68"
@@ -29,42 +29,42 @@ colors:
   badge-danger-fg: "#c0392b"
 typography:
   display:
-    fontFamily: "SpaceGrotesk_700Bold"
+    fontFamily: "NotoSans_700Bold"
     fontSize: "36px"
     fontWeight: 700
     lineHeight: 42
     letterSpacing: "normal"
   headline:
-    fontFamily: "SpaceGrotesk_700Bold"
+    fontFamily: "NotoSans_700Bold"
     fontSize: "26px"
     fontWeight: 700
     lineHeight: 32
   title:
-    fontFamily: "SpaceGrotesk_700Bold"
+    fontFamily: "NotoSans_700Bold"
     fontSize: "16px"
     fontWeight: 700
     lineHeight: 22
   body:
-    fontFamily: "SpaceGrotesk_400Regular"
+    fontFamily: "NotoSans_400Regular"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 20
   label:
-    fontFamily: "SpaceGrotesk_600SemiBold"
+    fontFamily: "NotoSans_600SemiBold"
     fontSize: "12px"
     fontWeight: 600
     lineHeight: 17
 rounded:
-  sm: "4px"
-  md: "8px"
+  sm: "10px"
+  md: "14px"
   pill: "29px"
 spacing:
   xs: "4px"
   sm: "8px"
   md: "12px"
-  lg: "18px"
-  xl: "26px"
-  xxl: "38px"
+  lg: "16px"
+  xl: "22px"
+  xxl: "32px"
 components:
   button-primary:
     backgroundColor: "{colors.navy}"
@@ -108,15 +108,15 @@ components:
 
 **Creative North Star: "The Trade Ledger"**
 
-Zyntra's visual system reads like a well-kept ledger book: deep navy as the ink of record, gold as the mark of value, everything laid out with the discipline of something that has to be trusted. This isn't a consumer shopping app dressed up for wholesale — it's infrastructure for people conducting real trade, and the interface should carry that weight without ever feeling heavy-handed. Bold, uppercase Space Grotesk display type ("BEYOND FACTORY GATES", "HOW WILL YOU USE ZYNTRA?") gives the brand its confident, industrial voice; a restrained platinum body keeps the working screens (browsing, inventory, orders) legible and calm underneath it.
+Zyntra's visual system reads like a well-kept ledger book: deep navy as the ink of record, gold as the mark of value, everything laid out with the discipline of something that has to be trusted. This isn't a consumer shopping app dressed up for wholesale — it's infrastructure for people conducting real trade, and the interface should carry that weight without ever feeling heavy-handed. Bold, uppercase Noto Sans display type ("BEYOND FACTORY GATES", "HOW WILL YOU USE ZYNTRA?") gives the brand its confident, industrial voice; a quiet near-white card surface keeps the working screens (browsing, inventory, orders) legible and calm underneath it.
 
 The system explicitly rejects the generic SaaS-dashboard look: no flat gray panels, no interchangeable enterprise-tool chrome. Every surface should feel like it belongs to a single deliberate brand, whether it's a manufacturer's inventory screen or a distributor's tracking view.
 
 **Key Characteristics:**
 - Navy-and-gold as the load-bearing palette — navy for structure and trust, gold for value and action
-- Bold uppercase Space Grotesk display type for identity moments; the same grotesque at compact working sizes for everything else — dense, ledger-like rhythm
-- Platinum (#e5e4e2) as the accent surface for sections and cards — brushed metal next to the navy ink
-- Sharp 4px radius as the default component shape — structural, not soft
+- Bold uppercase Noto Sans display type for identity moments; the same sans at compact working sizes for everything else — dense, ledger-like rhythm
+- Card BG (#f7f6f4), a barely-there near-white tint, as the everyday surface for sections and cards — enough separation from the page to read as a distinct surface, without reading as a color block; Platinum (#e5e4e2) steps in as the deeper neutral for emphasis moments (icon wells, quick-action tiles)
+- A 10px radius as the default component shape — softened from the earlier 4px "sharp ledger" corner, still structured rather than pill-soft
 - Shadows used sparingly and quietly — never a decorative flourish
 
 ## 2. Colors
@@ -132,8 +132,9 @@ Two-color core (navy + gold) doing almost all of the work, backed by a quiet pla
 ### Neutral
 - **Paper White** (#ffffff): primary screen background, outline-button fill.
 - **Off White** (#f2f1ef): input field fill — a platinum-tinted near-white that separates fields from their surrounding screen.
-- **Platinum** (#e5e4e2): the accent surface for sections and cards — role selectors, product cards, grouped content. Replaces the old green-tinted Card Gray; it reads as brushed metal next to the navy ink, on brand for an industrial trade tool.
-- **Hairline Border** (#d9d8d5): default border color for outline buttons, dividers, unselected radio rings — one step deeper than platinum so hairlines stay visible on platinum cards.
+- **Card BG** (#f7f6f4): the everyday surface for cards and sections (product cards, message threads, addresses, order rows) — a light near-white tint one step off the screen white, quiet enough that it never reads as a color block.
+- **Platinum** (#e5e4e2): a deeper neutral reserved for emphasis inside a surface (icon wells, quick-action tiles) rather than the surface itself.
+- **Hairline Border** (#d9d8d5): default border color for outline buttons, dividers, unselected radio rings, and the tab bar's top edge — one step deeper than Card BG so hairlines stay visible.
 - **Ink Primary** (#0f2743, shared with Ledger Navy): primary text.
 - **Ink Secondary** (#525c68): secondary/supporting text.
 - **Ink Muted** (#556170): tertiary/deemphasized text. Darkened during the platinum re-tier so it keeps ≥4.5:1 on platinum surfaces, not just white.
@@ -151,7 +152,7 @@ Two-color core (navy + gold) doing almost all of the work, backed by a quiet pla
 
 ## 3. Typography
 
-**Display / Body Font:** Space Grotesk (SpaceGrotesk_400Regular through SpaceGrotesk_700Bold), no secondary typeface. The `extraBold` token intentionally maps to the 700 Bold cut — Space Grotesk ships no 800, and its Bold is chunky enough to carry the uppercase display voice.
+**Display / Body Font:** Noto Sans (NotoSans_400Regular through NotoSans_700Bold), no secondary typeface. The `extraBold` token intentionally maps to the 700 Bold cut — only 400–700 are loaded, and Bold is chunky enough to carry the uppercase display voice.
 
 **Character:** A single grotesque carried across four weights does the work of a type pairing — bold uppercase for declarations, regular/medium/semiBold for everything a user reads while working. The scale runs deliberately compact (one step tighter than a default mobile ramp) to give working screens a dense, ledger-like rhythm.
 
@@ -165,6 +166,9 @@ Two-color core (navy + gold) doing almost all of the work, backed by a quiet pla
 ### Named Rules
 **The Uppercase Declaration Rule.** Bold uppercase type is reserved for identity moments — welcome screens, role/section headlines — never for body copy or buttons beyond a short label. Overusing it flattens its impact.
 
+### Navigation Surfaces
+The tab bar sits on the plain screen background (white), separated from content by a 1.5px hairline top border rather than a color fill — consistent with The Two-Color Rule and The One Shadow Rule (no second shadow introduced to lift it).
+
 ## 4. Elevation
 
 **Quiet lift.** Zyntra is not a flat system, but its shadows are ambient rather than decorative: a single soft shadow (7% opacity navy, 14px blur, 4px vertical offset) lifts cards just enough to separate them from the page, without ever reading as a "floating panel." Depth signals content grouping, not hierarchy of importance — importance is carried by color and type weight instead.
@@ -177,32 +181,32 @@ Two-color core (navy + gold) doing almost all of the work, backed by a quiet pla
 
 ## 5. Components
 
-Components are solid and deliberate: full-bleed navy or gold fills, a consistently sharp 4px radius (not soft rounded corners), 1.5px borders where borders appear at all. Control heights run one step tighter than a default mobile kit (50px buttons, 46px fields, 34px chips) for a dense but fluid working rhythm — all still comfortably above the 44pt touch floor for primary controls. The one intentional break from the sharp-radius rule is the accent CTA button, which goes fully pill-shaped (29px radius) to mark it as the single most important action on a screen.
+Components are solid and deliberate: full-bleed navy or gold fills, a consistently soft 10px radius (not sharp, not pill), 1.5px borders where borders appear at all. Control heights run one step tighter than a default mobile kit (50px buttons, 46px fields, 34px chips) for a dense but fluid working rhythm — all still comfortably above the 44pt touch floor for primary controls. The one intentional break from the default radius is the accent CTA button, which goes fully pill-shaped (29px radius) to mark it as the single most important action on a screen.
 
 ### Buttons
-- **Shape:** 4px radius (`rounded.sm`) by default; the accent variant is a full pill (29px radius) — reserved for the single primary CTA on a screen (e.g. "Get Started").
+- **Shape:** 10px radius (`rounded.sm`) by default; the accent variant is a full pill (29px radius) — reserved for the single primary CTA on a screen (e.g. "Get Started").
 - **Primary:** navy fill (#0f2743), white label, 50px height.
 - **Accent:** gold fill (#eaaa34), navy label, pill radius, 50px height. Use for the one CTA that matters most on the screen.
 - **Outline:** white fill, 1.5px hairline border (#d9d8d5), primary-ink label. Use for secondary actions alongside a primary/accent button.
 - **States:** disabled = 0.5 opacity; pressed = 0.85 opacity. No color-shift hover states (touch-first platform).
 
 ### Chips
-- **Style:** 4px radius, 1.5px border, 34px height, horizontal padding 16px.
+- **Style:** 10px radius, 1.5px border, 34px height, horizontal padding 16px.
 - **State:** active = navy fill / white text; inactive = white fill / ink-primary text with hairline border. Gold stays reserved for the single most important action/value on a screen.
 
 ### Cards
-- **Corner style:** 4px radius.
-- **Background:** Platinum (#e5e4e2) for product/role/section cards on white screens.
+- **Corner style:** 10px radius (14px for larger sheet-style surfaces, e.g. the bottom-sheet product detail panel).
+- **Background:** Card BG (#f7f6f4) for product/role/section cards on white screens — quiet enough to separate from the page without reading as a color block. Platinum (#e5e4e2) is reserved for emphasis elements sitting inside a card (icon wells, quick-action tiles), not the card surface itself.
 - **Shadow strategy:** the single "Card lift" shadow (see Elevation) on product cards; role-selection cards use a border state instead of a shadow to show selection (gold 1.5px border when active).
-- **Internal padding:** 8px (compact product cards) up to 16px (role cards with more content).
+- **Internal padding:** 8–12px (compact product/list cards) up to 16px (role cards, cart summary). Padding above ~16px reads as bloat at this density — resist stretching cards for "breathing room."
 
 ### Inputs / Fields
-- **Style:** Off White fill (#f2f1ef), 1.5px hairline border, 4px radius, 46px height (92px for multiline).
+- **Style:** Off White fill (#f2f1ef), 1.5px hairline border, 10px radius, 46px height (92px for multiline).
 - **Focus/Error:** error state swaps the border to Error red (#d64545); no distinct focus-ring treatment currently — border-color is the only state signal besides content.
 - **Icons:** left icon slot and a right-aligned secure-entry toggle (eye/eye-slash, using muted/gold icon colors) are built into the field, not bolted on separately.
 
 ### Badges & Status
-- **Badges:** solid-fill for brand variants (gold/navy), soft tonal pairs for semantic variants (success/warning/danger) — bold 10px uppercase-weight label, 4px radius pill-adjacent rectangle.
+- **Badges:** solid-fill for brand variants (gold/navy), soft tonal pairs for semantic variants (success/warning/danger) — bold 10px uppercase-weight label, 6px radius pill-adjacent rectangle (scaled to the badge's own small height rather than the card radius token).
 - **Status dots:** 10px circle, one of three status colors (in-transit gold, processing blue, delivered green) — used wherever an order status needs a fast visual scan without reading text.
 
 ### Navigation
@@ -212,8 +216,8 @@ Components are solid and deliberate: full-bleed navy or gold fills, a consistent
 
 ### Do:
 - **Do** keep the palette to navy + gold as the only two brand colors; everything else is neutral or semantic (see The Two-Color Rule).
-- **Do** use platinum (#e5e4e2) as the one surface color for cards and grouped sections; don't invent per-screen surface tints.
-- **Do** use the 4px sharp radius as the default component shape; save the pill radius for the one accent CTA per screen.
+- **Do** use Card BG (#f7f6f4) as the one surface color for cards and grouped sections; don't invent per-screen surface tints. Reserve platinum for emphasis elements inside a surface, not the surface itself.
+- **Do** use the 10px radius as the default component shape; save the pill radius for the one accent CTA per screen.
 - **Do** use bold uppercase type only for identity-level headlines, not body copy or routine buttons (The Uppercase Declaration Rule).
 - **Do** keep elevation to the single quiet card-lift shadow; signal importance through color/type, not deeper shadows (The One Shadow Rule).
 - **Do** meet WCAG AA contrast (≥4.5:1 body, ≥3:1 large text) and ≥44×44pt touch targets, per PRODUCT.md's accessibility commitment.

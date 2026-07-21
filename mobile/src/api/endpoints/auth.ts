@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client";
-import type { AuthResponseDto, LoginPayload, RegisterPayload, UpdateProfilePayload, UserDto } from "@/api/types";
+import type { AuthResponseDto, GoogleAuthPayload, LoginPayload, RegisterPayload, Role, UpdateProfilePayload, UserDto } from "@/api/types";
 
 export function login(payload: LoginPayload) {
   return apiClient.post<AuthResponseDto>("/auth/login", payload).then((res) => res.data);
@@ -7,6 +7,14 @@ export function login(payload: LoginPayload) {
 
 export function register(payload: RegisterPayload) {
   return apiClient.post<AuthResponseDto>("/auth/register", payload).then((res) => res.data);
+}
+
+export function googleAuth(payload: GoogleAuthPayload) {
+  return apiClient.post<AuthResponseDto>("/auth/google", payload).then((res) => res.data);
+}
+
+export function setRole(role: Role) {
+  return apiClient.put<UserDto>("/auth/role", { role }).then((res) => res.data);
 }
 
 export function me() {

@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import * as authApi from "@/api/endpoints/auth";
 import { getAuthToken, setAuthToken } from "@/api/client";
-import type { AuthResponseDto, LoginPayload, RegisterPayload } from "@/api/types";
+import type { AuthResponseDto, GoogleAuthPayload, LoginPayload, RegisterPayload } from "@/api/types";
 
 export function useLoginMutation() {
   return useMutation({
@@ -23,6 +23,22 @@ export function useRegisterMutation() {
       await setAuthToken(result.token);
       return result;
     },
+  });
+}
+
+export function useGoogleAuthMutation() {
+  return useMutation({
+    mutationFn: async (payload: GoogleAuthPayload): Promise<AuthResponseDto> => {
+      const result = await authApi.googleAuth(payload);
+      await setAuthToken(result.token);
+      return result;
+    },
+  });
+}
+
+export function useSetRoleMutation() {
+  return useMutation({
+    mutationFn: authApi.setRole,
   });
 }
 

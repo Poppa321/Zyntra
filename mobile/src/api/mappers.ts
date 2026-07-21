@@ -30,17 +30,20 @@ import type {
   Product,
 } from "@/types/domain";
 
-// Backend has no ratings feature (out of scope) — used purely as a decorative default.
+// The list endpoint doesn't include per-product rating aggregates (would be
+// an N+1 query), so cards fall back to a neutral placeholder until opened.
 const PLACEHOLDER_RATING = 4.8;
 
 export function mapProductCard(dto: ProductCardDto): Product {
   return {
     id: dto.id,
     name: dto.name,
+    imageUrl: dto.imageUrl,
     manufacturer: dto.manufacturerName,
     manufacturerId: dto.manufacturerId,
     category: "",
     rating: PLACEHOLDER_RATING,
+    reviewCount: 0,
     price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
     unit: dto.unit,
     moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
@@ -49,6 +52,7 @@ export function mapProductCard(dto: ProductCardDto): Product {
     basePrice: dto.baseUnitPrice,
     baseQty: dto.moq,
     tiers: [],
+    featured: dto.featured,
   };
 }
 
@@ -68,10 +72,12 @@ export function mapProductDetail(dto: ProductDetailDto): Product {
   return {
     id: dto.id,
     name: dto.name,
+    imageUrl: dto.imageUrl,
     manufacturer: dto.manufacturerName,
     manufacturerId: dto.manufacturerId,
     category: dto.category,
-    rating: PLACEHOLDER_RATING,
+    rating: dto.reviewCount > 0 ? dto.averageRating : PLACEHOLDER_RATING,
+    reviewCount: dto.reviewCount,
     price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
     unit: dto.unit,
     moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
@@ -89,6 +95,7 @@ export function mapProductDetail(dto: ProductDetailDto): Product {
             maxQty: null,
             unitPrice: dto.baseUnitPrice,
           }],
+    featured: dto.featured,
   };
 }
 
@@ -146,6 +153,7 @@ export function mapInventoryItem(dto: ProductDetailDto): InventoryItem {
     units: `${dto.stockQty.toLocaleString()} units`,
     stockQty: dto.stockQty,
     low: dto.stockQty <= dto.lowStockThreshold,
+    featured: dto.featured,
   };
 }
 

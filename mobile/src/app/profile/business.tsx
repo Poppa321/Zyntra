@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CaretLeft } from "phosphor-react-native";
@@ -9,7 +9,7 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useProfileQuery, useUpdateProfileMutation } from "@/hooks/useProfile";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 export default function BusinessProfileScreen() {
@@ -22,6 +22,9 @@ export default function BusinessProfileScreen() {
   const [phone, setPhone] = useState(profile.phone);
   const [location, setLocation] = useState(profile.location);
   const [description, setDescription] = useState(profile.description);
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     setFullName(profile.fullName);
@@ -43,8 +46,8 @@ export default function BusinessProfileScreen() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top", "bottom"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.header}>
         <IconButton icon={<CaretLeft size={18} color={colors.textPrimary} weight="bold" />} onPress={() => router.back()} />
         <Text weight="bold" style={styles.headerTitle}>
@@ -61,6 +64,7 @@ export default function BusinessProfileScreen() {
         </Pressable>
       </View>
 
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <TextField label="Full name" value={fullName} onChangeText={setFullName} autoCapitalize="words" />
         <TextField label="Company name" value={companyName} onChangeText={setCompanyName} autoCapitalize="words" />
@@ -81,11 +85,16 @@ export default function BusinessProfileScreen() {
           numberOfLines={4}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   header: {
     height: 64,
     flexDirection: "row",
@@ -118,4 +127,5 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingBottom: 32,
   },
-});
+  });
+}

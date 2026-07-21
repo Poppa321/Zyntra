@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -18,7 +19,7 @@ import {
   useShipOrderMutation,
 } from "@/hooks/useOrders";
 import type { IncomingOrder, IncomingOrderStatus } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 const NEXT_ACTION: Partial<Record<IncomingOrderStatus, { label: string; icon: typeof Check }>> = {
@@ -36,6 +37,9 @@ export default function IncomingOrders() {
   const outForDelivery = useOutForDeliveryMutation();
   const deliverOrder = useDeliverOrderMutation();
   const startConversation = useStartConversationMutation();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handleMessage(order: IncomingOrder) {
     startConversation.mutate(order.counterpartyId, {
@@ -100,14 +104,14 @@ export default function IncomingOrders() {
         <View style={styles.actionsRow}>
           {action && (
             <Pressable style={isNew ? styles.acceptButton : styles.shipButton} onPress={() => handlePrimaryAction(order)}>
-              <action.icon size={14} color={isNew ? colors.navy : colors.white} weight={isNew ? "bold" : "fill"} />
-              <Text weight="bold" color={isNew ? colors.navy : colors.white} style={styles.actionLabel}>
+              <action.icon size={14} color={isNew ? colors.navy : colors.pureWhite} weight={isNew ? "bold" : "fill"} />
+              <Text weight="bold" color={isNew ? colors.navy : colors.pureWhite} style={styles.actionLabel}>
                 {action.label}
               </Text>
             </Pressable>
           )}
           {isDelivered && (
-            <Text weight="semiBold" color="#26994d" style={styles.actionLabel}>
+            <Text weight="semiBold" color={colors.success} style={styles.actionLabel}>
               Delivered
             </Text>
           )}
@@ -127,14 +131,14 @@ export default function IncomingOrders() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.content}
-        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListHeaderComponent={
           <Text weight="extraBold" style={styles.title}>
             INCOMING{"\n"}ORDERS
@@ -157,7 +161,8 @@ export default function IncomingOrders() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 12,
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 18,
+    padding: 11,
   },
   cardShadow: {
     ...cardShadow,
@@ -202,52 +207,52 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   orderId: {
-    fontSize: 15,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   topRowRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
   },
   customer: {
-    marginTop: 10,
-    fontSize: 12,
-  },
-  summary: {
-    marginTop: 4,
+    marginTop: 3,
     fontSize: 11,
   },
+  summary: {
+    marginTop: 2,
+    fontSize: 10,
+  },
   total: {
-    marginTop: 8,
-    fontSize: 18,
+    marginTop: 4,
+    fontSize: 15,
   },
   actionsRow: {
-    marginTop: 12,
+    marginTop: 8,
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
   },
   acceptButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    height: 42,
-    paddingHorizontal: 18,
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 14,
     borderRadius: radius.sm,
     backgroundColor: colors.gold,
   },
   shipButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    height: 42,
-    paddingHorizontal: 12,
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 10,
     borderRadius: radius.sm,
     backgroundColor: colors.navy,
   },
   actionLabel: {
-    fontSize: 12,
+    fontSize: 11,
   },
   secondaryButton: {
     flexDirection: "row",
@@ -255,6 +260,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   secondaryAction: {
-    fontSize: 12,
+    fontSize: 11,
   },
-});
+  });
+}

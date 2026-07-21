@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { CaretLeft, ChatCircleText, Minus, Plus, SealCheck, ShoppingCartSimple } from "phosphor-react-native";
@@ -9,25 +10,31 @@ import { showAlert } from "@/lib/alert";
 import { Badge } from "@/components/Badge";
 import { IconButton } from "@/components/IconButton";
 import { ImageCarousel } from "@/components/ImageCarousel";
+import { ProductReviews } from "@/components/ProductReviews";
 import { Text } from "@/components/Text";
+import { useSessionQuery } from "@/hooks/useAuth";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useAddToCartMutation } from "@/hooks/useCart";
 import { useProductQuery } from "@/hooks/useProducts";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: product, isLoading, isError } = useProductQuery(id);
+  const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   if (!product) {
     return (
       <View style={[styles.container, styles.loadingState]}>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <IconButton
           icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
           onPress={() => router.back()}
-          style={styles.backButton}
+          style={StyleSheet.flatten([styles.backButton, { top: insets.top + 12 }])}
         />
         <Text weight="medium" style={styles.loadingLabel}>
           {isLoading ? "Loading product…" : isError ? "Couldn't load this product." : "Product not found."}
@@ -43,6 +50,11 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
   const [quantity, setQuantity] = useState(product.baseQty);
   const addToCart = useAddToCartMutation();
   const startConversation = useStartConversationMutation();
+  const { data: session } = useSessionQuery();
+  const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handleMessageManufacturer() {
     if (!product.manufacturerId) return;
@@ -77,13 +89,13 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.imageArea}>
-        <ImageCarousel />
+        <ImageCarousel imageUrl={product.imageUrl} />
         <IconButton
           icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
           onPress={() => router.back()}
-          style={styles.backButton}
+          style={StyleSheet.flatten([styles.backButton, { top: insets.top + 12 }])}
         />
       </View>
 
@@ -128,7 +140,7 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
                   pressed && styles.tierRowPressed,
                 ]}
               >
-                <Text weight="medium" color={selected ? colors.white : colors.textPrimary} style={styles.tierRange}>
+                <Text weight="medium" color={selected ? colors.pureWhite : colors.textPrimary} style={styles.tierRange}>
                   {tier.range}
                 </Text>
                 {tier.best && <Badge label="BEST" variant="gold" />}
@@ -168,21 +180,29 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
           </View>
 
           <Pressable style={styles.addButton} onPress={handleAdd}>
-            <Text weight="semiBold" color={colors.white} style={styles.addLabel}>
+            <Text weight="semiBold" color={colors.pureWhite} style={styles.addLabel}>
               Add — ₵{total.toLocaleString()}
             </Text>
             <ShoppingCartSimple size={20} color={colors.gold} weight="fill" />
           </Pressable>
         </View>
+
+        <ProductReviews
+          productId={product.id}
+          averageRating={product.rating}
+          reviewCount={product.reviewCount}
+          canReview={session?.role === "DISTRIBUTOR"}
+        />
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.offWhite,
   },
   imageArea: {
     height: 310,
@@ -198,14 +218,13 @@ const styles = StyleSheet.create({
   backButton: {
     position: "absolute",
     left: 20,
-    top: 58,
   },
   sheet: {
     flex: 1,
     marginTop: -30,
-    backgroundColor: colors.cardBg,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radius.md,
+    borderTopRightRadius: radius.md,
   },
   sheetContent: {
     padding: 18,
@@ -318,4 +337,5 @@ const styles = StyleSheet.create({
   addLabel: {
     fontSize: 14,
   },
-});
+  });
+}

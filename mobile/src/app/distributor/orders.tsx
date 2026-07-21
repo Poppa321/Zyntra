@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -13,7 +13,7 @@ import { useStartConversationMutation } from "@/hooks/useChat";
 import { useDistributorOrdersQuery } from "@/hooks/useOrders";
 import type { OrderGroup } from "@/api/types";
 import type { Order } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 const TABS: { key: OrderGroup; label: string }[] = [
@@ -26,6 +26,9 @@ export default function Orders() {
   const [activeTab, setActiveTab] = useState(0);
   const { data: filtered } = useDistributorOrdersQuery(TABS[activeTab].key);
   const startConversation = useStartConversationMutation();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handleMessage(order: Order) {
     startConversation.mutate(order.counterpartyId, {
@@ -74,14 +77,14 @@ export default function Orders() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.content}
-        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         ListHeaderComponent={
           <>
             <Text weight="extraBold" style={styles.title}>
@@ -102,7 +105,7 @@ export default function Orders() {
                   >
                     <Text
                       weight="medium"
-                      color={active ? colors.white : colors.textPrimary}
+                      color={active ? colors.pureWhite : colors.textPrimary}
                       style={styles.tabLabel}
                     >
                       {tab.label}
@@ -127,7 +130,8 @@ export default function Orders() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 16,
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.cardBg,
     borderRadius: radius.sm,
-    padding: 18,
+    padding: 11,
     ...cardShadow,
   },
   cardTopRow: {
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   orderId: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   statusRow: {
@@ -189,22 +193,22 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statusLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textPrimary,
   },
   summary: {
-    marginTop: 12,
-    fontSize: 11,
+    marginTop: 4,
+    fontSize: 10,
     color: colors.textPrimary,
   },
   cardBottomRow: {
-    marginTop: 12,
+    marginTop: 5,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   total: {
-    fontSize: 16,
+    fontSize: 14,
   },
   trackButton: {
     flexDirection: "row",
@@ -224,4 +228,5 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 13,
   },
-});
+  });
+}

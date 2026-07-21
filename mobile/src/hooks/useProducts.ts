@@ -17,6 +17,16 @@ export function useProductsQuery(category?: string, search?: string) {
   return { ...query, data: query.data ?? [] };
 }
 
+export function useManufacturerProductsQuery(manufacturerId: string | undefined) {
+  const query = useQuery({
+    queryKey: ["products", "manufacturer", manufacturerId],
+    queryFn: () => listProducts({ manufacturerId, size: 50 }).then((page) => page.content.map(mapProductCard)),
+    enabled: !!manufacturerId,
+  });
+
+  return { ...query, data: query.data ?? [] };
+}
+
 export function useProductQuery(id: string | undefined) {
   const query = useQuery({
     queryKey: ["product", id],

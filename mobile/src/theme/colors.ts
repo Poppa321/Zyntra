@@ -5,11 +5,19 @@ export const colors = {
   goldDark: "#d17a3d",
 
   white: "#ffffff",
-  // Platinum neutral tier: sections and cards sit on true platinum,
-  // fields on a platinum-tinted near-white, hairlines a step deeper.
+  // Fixed white — for text/icons on brand-constant surfaces (navy, gold)
+  // that never invert with theme. Unlike `white`, this never changes value:
+  // `white` is a page-surface role that intentionally flips near-black in
+  // dark mode, which is correct for backgrounds but wrong for foreground
+  // ink pinned to a navy/gold chip, button, or hero.
+  pureWhite: "#ffffff",
+  // Platinum neutral tier: platinum is now a deeper accent tone reserved for
+  // emphasis (selected states, dense navy-adjacent chrome); everyday cards and
+  // sections sit on cardBg, a much lighter near-white tint one step off the
+  // screen white — enough to separate from the page without reading as a block.
   platinum: "#e5e4e2",
   offWhite: "#f2f1ef",
-  cardBg: "#e5e4e2",
+  cardBg: "#f7f6f4",
   border: "#d9d8d5",
 
   textPrimary: "#0f2743",

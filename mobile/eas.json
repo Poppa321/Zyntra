@@ -6,13 +6,28 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://zyntra-5wo1.onrender.com/api",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "572108970974-m9ka12qqr0h3qVaf4u3jmt9tvmf7mdak.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "572108970974-rg7581e6o0tbhh9bd346ptfpnmnmts2l.apps.googleusercontent.com"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://zyntra-5wo1.onrender.com/api",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "572108970974-m9ka12qqr0h3qVaf4u3jmt9tvmf7mdak.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "572108970974-rg7581e6o0tbhh9bd346ptfpnmnmts2l.apps.googleusercontent.com"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://zyntra-5wo1.onrender.com/api",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "572108970974-m9ka12qqr0h3qVaf4u3jmt9tvmf7mdak.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "572108970974-rg7581e6o0tbhh9bd346ptfpnmnmts2l.apps.googleusercontent.com"
+      }
     }
   },
   "submit": {

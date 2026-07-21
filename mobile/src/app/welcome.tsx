@@ -1,4 +1,5 @@
 import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -13,6 +14,8 @@ import { colors } from "@/theme/colors";
 const welcomeBg = require("@/../assets/images/auth/welcome-bg.jpg");
 
 export default function Welcome() {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -22,7 +25,7 @@ export default function Welcome() {
           colors={["rgba(234,170,52,0.5)", "rgba(209,122,61,0.5)"]}
           style={StyleSheet.absoluteFill}
         />
-        <View style={styles.heroTop}>
+        <View style={[styles.heroTop, { top: insets.top + 16 }]}>
           <Logo variant="light" type="mark" size="sm" />
         </View>
       </View>
@@ -69,7 +72,6 @@ const styles = StyleSheet.create({
   },
   heroTop: {
     position: "absolute",
-    top: 58,
     left: 24,
   },
   body: {

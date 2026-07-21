@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 
 const ROW_A = [55, 85, 145, 175, 235, 265, 325, 355];
 const ROW_B = [25, 55, 115, 145, 205, 235, 295, 325];
@@ -11,6 +12,9 @@ const ROW_GAP = 26;
 const DOT_SIZE = 6;
 
 export function DotPattern() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container} pointerEvents="none">
       {ROW_PATTERNS.map((row, rowIndex) =>
@@ -28,20 +32,22 @@ export function DotPattern() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 300,
-  },
-  dot: {
-    position: "absolute",
-    width: DOT_SIZE,
-    height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
-    backgroundColor: colors.navy,
-    opacity: 0.5,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 0,
+      height: 300,
+    },
+    dot: {
+      position: "absolute",
+      width: DOT_SIZE,
+      height: DOT_SIZE,
+      borderRadius: DOT_SIZE / 2,
+      backgroundColor: colors.navy,
+      opacity: 0.5,
+    },
+  });
+}

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -20,7 +21,7 @@ import {
   useNotificationsQuery,
 } from "@/hooks/useNotifications";
 import type { Notification, NotificationType } from "@/types/domain";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { cardShadow, radius } from "@/theme/spacing";
 
 const TYPE_ICON: Record<NotificationType, Icon> = {
@@ -34,6 +35,9 @@ export default function Notifications() {
   const { data } = useNotificationsQuery();
   const markRead = useMarkNotificationReadMutation();
   const markAllRead = useMarkAllNotificationsReadMutation();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const hasUnread = data.some((item) => !item.read);
 
@@ -41,7 +45,10 @@ export default function Notifications() {
     const IconComponent = TYPE_ICON[item.type];
     return (
       <Pressable
-        onPress={() => !item.read && markRead.mutate(item.id)}
+        onPress={() => {
+          if (!item.read) markRead.mutate(item.id);
+          router.push(`/notifications/${item.id}`);
+        }}
         style={({ pressed }) => [styles.card, !item.read && styles.cardUnread, pressed && styles.pressed]}
       >
         <View style={[styles.iconWrap, !item.read && styles.iconWrapUnread]}>
@@ -70,8 +77,8 @@ export default function Notifications() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.header}>
         <IconButton icon={<CaretLeft size={18} color={colors.textPrimary} weight="bold" />} onPress={() => router.back()} />
         <Text weight="extraBold" style={styles.headerTitle}>
@@ -112,7 +119,8 @@ export default function Notifications() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   header: {
     height: 64,
     flexDirection: "row",
@@ -195,4 +203,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
   },
-});
+  });
+}

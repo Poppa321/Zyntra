@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -8,14 +9,14 @@ import { confirmAlert, showAlert } from "@/lib/alert";
 import type { OrderStatusDto } from "@/api/types";
 import { Button } from "@/components/Button";
 import { IconButton } from "@/components/IconButton";
+import { LeafletMap } from "@/components/LeafletMap";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { TrackingMap } from "@/components/TrackingMap";
 import { useSessionQuery } from "@/hooks/useAuth";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useCancelOrderMutation, useOrderQuery } from "@/hooks/useOrders";
 import { usePayForOrderMutation } from "@/hooks/usePayments";
-import { colors } from "@/theme/colors";
+import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 const HAPPY_PATH: OrderStatusDto[] = ["PENDING", "ACCEPTED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
@@ -36,6 +37,9 @@ export default function OrderTracking() {
   const payForOrder = usePayForOrderMutation();
   const cancelOrder = useCancelOrderMutation();
   const startConversation = useStartConversationMutation();
+  const { isDark } = useTheme();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const order = data?.order;
   const isDistributor = !!order && user?.id === order.distributorId;
@@ -84,8 +88,8 @@ export default function OrderTracking() {
   }
 
   return (
-    <ScreenContainer background={colors.white} edges={["top"]}>
-      <StatusBar style="dark" />
+    <ScreenContainer edges={["top"]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <IconButton
           icon={<CaretLeft size={18} color={colors.textPrimary} weight="bold" />}
@@ -126,7 +130,12 @@ export default function OrderTracking() {
           ))}
         </View>
 
-        {!isTerminatedEarly && <TrackingMap />}
+        {!isTerminatedEarly && order && (
+          <LeafletMap
+            originAddress={`${order.manufacturerBusinessName ?? "Manufacturer"}, Ghana`}
+            destinationAddress={order.deliveryAddress ?? `${order.distributorBusinessName ?? "Distributor"}, Ghana`}
+          />
+        )}
 
         {order && (
           <View style={styles.itemsCard}>
@@ -143,6 +152,53 @@ export default function OrderTracking() {
                 </Text>
               </View>
             ))}
+
+            <View style={styles.breakdownDivider} />
+            <View style={styles.itemRow}>
+              <Text weight="regular" color={colors.textMuted} style={styles.itemName}>
+                Subtotal
+              </Text>
+              <Text weight="medium" color={colors.textMuted} style={styles.itemTotal}>
+                ₵{order.subtotal.toLocaleString()}
+              </Text>
+            </View>
+            <View style={styles.itemRow}>
+              <Text weight="regular" color={colors.textMuted} style={styles.itemName}>
+                Delivery fee
+              </Text>
+              <Text weight="medium" color={colors.textMuted} style={styles.itemTotal}>
+                ₵{order.deliveryFee.toLocaleString()}
+              </Text>
+            </View>
+            {isDistributor ? (
+              <View style={styles.itemRow}>
+                <Text weight="bold" style={styles.itemName}>
+                  Total
+                </Text>
+                <Text weight="extraBold" color={colors.gold} style={styles.itemTotal}>
+                  ₵{order.total.toLocaleString()}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.itemRow}>
+                  <Text weight="regular" color={colors.textMuted} style={styles.itemName}>
+                    Platform fee
+                  </Text>
+                  <Text weight="medium" color={colors.textMuted} style={styles.itemTotal}>
+                    −₵{order.platformFeeAmount.toLocaleString()}
+                  </Text>
+                </View>
+                <View style={styles.itemRow}>
+                  <Text weight="bold" style={styles.itemName}>
+                    You'll receive
+                  </Text>
+                  <Text weight="extraBold" color={colors.success} style={styles.itemTotal}>
+                    ₵{order.payoutAmount.toLocaleString()}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         )}
 
@@ -216,7 +272,8 @@ export default function OrderTracking() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 8,
@@ -298,6 +355,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textPrimary,
   },
+  breakdownDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 2,
+  },
   payButton: {
     marginTop: 12,
   },
@@ -364,4 +426,5 @@ const styles = StyleSheet.create({
   historyNote: {
     fontSize: 11,
   },
-});
+  });
+}

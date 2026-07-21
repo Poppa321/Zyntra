@@ -12,10 +12,12 @@ export type PriceTier = {
 export type Product = {
   id: string;
   name: string;
+  imageUrl?: string;
   manufacturer: string;
   manufacturerId: string;
   category: string;
   rating: number;
+  reviewCount: number;
   price: string;
   unit: string;
   moq: string;
@@ -24,6 +26,7 @@ export type Product = {
   leadTime: string;
   basePrice: number;
   baseQty: number;
+  featured: boolean;
 };
 
 export const categories = ["All", "Grains", "Flour", "Oils", "Cocoa", "Feed", "Confectionery"];
@@ -80,6 +83,7 @@ export type InventoryItem = {
   units: string;
   stockQty: number;
   low: boolean;
+  featured: boolean;
 };
 
 export type NotificationType = "order" | "inventory" | "system" | "promo";

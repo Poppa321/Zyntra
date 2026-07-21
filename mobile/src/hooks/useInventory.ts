@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getManufacturerDashboard } from "@/api/endpoints/dashboard";
-import { createProduct, getProduct, listProducts, updateStock } from "@/api/endpoints/products";
+import { createProduct, getProduct, listProducts, updateStock, uploadProductPhoto } from "@/api/endpoints/products";
 import { mapDashboard, mapInventoryItem } from "@/api/mappers";
 import { useSessionQuery } from "@/hooks/useAuth";
 import type { ProductCreateRequest } from "@/api/types";
@@ -54,6 +54,18 @@ export function useCreateProductMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export function useUploadProductPhotoMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, photo }: { id: string; photo: { uri: string; name: string; type: string } }) =>
+      uploadProductPhoto(id, photo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
     },
   });
 }
