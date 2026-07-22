@@ -10,7 +10,10 @@
       "Bash(./mvnw -q -o compile)",
       "Bash(npx --no-install tsc --noEmit -p .)",
       "Bash(./node_modules/.bin/tsc.exe --noEmit -p .)",
-      "Bash(npx --no-install expo lint)"
+      "Bash(npx --no-install expo lint)",
+      "WebSearch",
+      "WebFetch(domain:unsplash.com)",
+      "Bash(./mvnw -q compile)"
     ]
   }
 }
