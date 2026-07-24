@@ -30,7 +30,7 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <View style={[styles.container, styles.loadingState]}>
-        <StatusBar style={isDark ? "light" : "dark"} />
+        <StatusBar style="light" />
         <IconButton
           icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
           onPress={() => router.back()}
@@ -89,7 +89,7 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
 
   return (
     <View style={styles.container}>
-      <StatusBar style={isDark ? "light" : "dark"} />
+      <StatusBar style="light" />
       <View style={styles.imageArea}>
         <ImageCarousel imageUrl={product.imageUrl} />
         <IconButton
@@ -217,7 +217,7 @@ function createStyles(colors: ThemeColors) {
     justifyContent: "center",
   },
   loadingLabel: {
-    fontSize: 12,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   backButton: {
@@ -237,7 +237,7 @@ function createStyles(colors: ThemeColors) {
     paddingBottom: 32,
   },
   name: {
-    fontSize: 19,
+    fontSize: 24,
     color: colors.textPrimary,
   },
   manufacturerRow: {
@@ -265,15 +265,15 @@ function createStyles(colors: ThemeColors) {
     opacity: 0.75,
   },
   messageLabel: {
-    fontSize: 11,
+    fontSize: 13,
   },
   manufacturer: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textPrimary,
   },
   sectionLabel: {
     marginTop: 16,
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textPrimary,
   },
   tiers: {
@@ -283,29 +283,32 @@ function createStyles(colors: ThemeColors) {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: 44,
+    height: 46,
     paddingHorizontal: 12,
-    backgroundColor: colors.white,
+    backgroundColor: colors.accentTint,
     borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.gold + "33",
   },
   tierRowSelected: {
     backgroundColor: colors.navy,
+    borderColor: colors.navy,
   },
   tierRowPressed: {
     opacity: 0.85,
   },
   tierHint: {
-    fontSize: 11,
+    fontSize: 13,
   },
   tierRange: {
-    fontSize: 12,
+    fontSize: 14,
   },
   tierPrice: {
-    fontSize: 13,
+    fontSize: 15,
   },
   moqLine: {
     marginTop: 8,
-    fontSize: 11,
+    fontSize: 13,
     color: colors.textPrimary,
   },
   footerRow: {
@@ -326,7 +329,7 @@ function createStyles(colors: ThemeColors) {
     borderRadius: radius.sm,
   },
   stepperValue: {
-    fontSize: 15,
+    fontSize: 17,
     color: colors.textPrimary,
   },
   addButton: {
@@ -340,7 +343,7 @@ function createStyles(colors: ThemeColors) {
     gap: 12,
   },
   addLabel: {
-    fontSize: 14,
+    fontSize: 16,
   },
   });
 }

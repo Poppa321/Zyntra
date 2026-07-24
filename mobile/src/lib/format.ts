@@ -21,8 +21,25 @@ export function formatRelativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+export function pluralizeUnit(unit: string, qty: number = 2): string {
+  if (!unit) return "";
+  const trimmed = unit.trim();
+  const endsWithS = trimmed.toLowerCase().endsWith("s");
+  if (qty === 1) {
+    // If it ends with 's', remove it to make it singular (e.g. bags -> bag)
+    return endsWithS ? trimmed.slice(0, -1) : trimmed;
+  }
+  // If count is not 1, make it plural if it doesn't already end with 's'
+  return endsWithS ? trimmed : `${trimmed}s`;
+}
+
 export function formatQtyRange(minQty: number, maxQty: number | null, unit: string): string {
-  const unitLabel = minQty === 1 && maxQty === 1 ? unit : `${unit}s`;
+  const unitLabel = formatQtyRangeLabel(minQty, maxQty, unit);
   if (maxQty === null) return `${minQty.toLocaleString()}+ ${unitLabel}`;
   return `${minQty.toLocaleString()} – ${maxQty.toLocaleString()} ${unitLabel}`;
+}
+
+function formatQtyRangeLabel(minQty: number, maxQty: number | null, unit: string): string {
+  const qty = minQty === 1 && maxQty === 1 ? 1 : 2;
+  return pluralizeUnit(unit, qty);
 }

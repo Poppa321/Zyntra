@@ -1,4 +1,4 @@
-import { formatCurrency, formatCurrencyPerUnit, formatQtyRange, formatRelativeTime } from "@/lib/format";
+import { formatCurrency, formatCurrencyPerUnit, formatQtyRange, formatRelativeTime, pluralizeUnit } from "@/lib/format";
 import type {
   AddressDto,
   AddressLabelDto,
@@ -46,7 +46,7 @@ export function mapProductCard(dto: ProductCardDto): Product {
     reviewCount: 0,
     price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
     unit: dto.unit,
-    moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
+    moq: `MOQ ${dto.moq.toLocaleString()} ${pluralizeUnit(dto.unit, dto.moq)}`,
     inStock: "",
     leadTime: "",
     basePrice: dto.baseUnitPrice,
@@ -80,8 +80,8 @@ export function mapProductDetail(dto: ProductDetailDto): Product {
     reviewCount: dto.reviewCount,
     price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
     unit: dto.unit,
-    moq: `MOQ ${dto.moq.toLocaleString()} ${dto.unit}s`,
-    inStock: `In stock · ${dto.stockQty.toLocaleString()} ${dto.unit}s`,
+    moq: `MOQ ${dto.moq.toLocaleString()} ${pluralizeUnit(dto.unit, dto.moq)}`,
+    inStock: `In stock · ${dto.stockQty.toLocaleString()} ${pluralizeUnit(dto.unit, dto.stockQty)}`,
     leadTime: `Lead time ${dto.leadTimeDaysMin}–${dto.leadTimeDaysMax} days`,
     basePrice: dto.baseUnitPrice,
     baseQty: dto.moq,
@@ -89,7 +89,7 @@ export function mapProductDetail(dto: ProductDetailDto): Product {
       tiers.length > 0
         ? tiers
         : [{
-            range: `${dto.moq}+ ${dto.unit}s`,
+            range: `${dto.moq}+ ${pluralizeUnit(dto.unit, dto.moq)}`,
             price: formatCurrencyPerUnit(dto.baseUnitPrice, dto.unit),
             minQty: dto.moq,
             maxQty: null,
