@@ -4,6 +4,8 @@ import com.zyntra.backend.dashboard.dto.ManufacturerDashboardDto;
 import com.zyntra.backend.dashboard.dto.RecentOrderDto;
 import com.zyntra.backend.order.OrderRepository;
 import com.zyntra.backend.order.OrderStatus;
+import com.zyntra.backend.product.PoolStatus;
+import com.zyntra.backend.product.ProductPoolRepository;
 import com.zyntra.backend.product.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,13 @@ public class DashboardService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final ProductPoolRepository productPoolRepository;
 
-    public DashboardService(OrderRepository orderRepository, ProductRepository productRepository) {
+    public DashboardService(OrderRepository orderRepository, ProductRepository productRepository,
+                             ProductPoolRepository productPoolRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.productPoolRepository = productPoolRepository;
     }
 
     @Transactional(readOnly = true)
@@ -36,9 +41,10 @@ public class DashboardService {
         long orderCount = orderRepository.countByManufacturerId(manufacturerId);
         long productCount = productRepository.countByManufacturerIdAndActiveTrue(manufacturerId);
         long lowStockCount = productRepository.countLowStock(manufacturerId);
+        long activePoolCount = productPoolRepository.countByProduct_Manufacturer_IdAndStatus(manufacturerId, PoolStatus.OPEN);
         List<RecentOrderDto> recentOrders = orderRepository.findTop5ByManufacturerIdOrderByCreatedAtDesc(manufacturerId)
             .stream().map(RecentOrderDto::from).toList();
 
-        return new ManufacturerDashboardDto(revenue30d, orderCount, productCount, lowStockCount, recentOrders);
+        return new ManufacturerDashboardDto(revenue30d, orderCount, productCount, lowStockCount, activePoolCount, recentOrders);
     }
 }

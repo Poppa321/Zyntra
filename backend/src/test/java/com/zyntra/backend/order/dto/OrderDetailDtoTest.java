@@ -62,7 +62,7 @@ class OrderDetailDtoTest {
         manufacturer.setBusinessName("Mfr Co");
         order.setManufacturer(manufacturer);
 
-        OrderDetailDto dto = OrderDetailDto.from(order, "PAID");
+        OrderDetailDto dto = OrderDetailDto.from(order, "PAID", true);
 
         assertTrue(dto.items().isEmpty());
         assertTrue(dto.statusHistory().isEmpty());

@@ -21,10 +21,13 @@ public class ProductController {
 
     private final ProductService productService;
     private final ProductImageService productImageService;
+    private final ProductPoolService productPoolService;
 
-    public ProductController(ProductService productService, ProductImageService productImageService) {
+    public ProductController(ProductService productService, ProductImageService productImageService,
+                              ProductPoolService productPoolService) {
         this.productService = productService;
         this.productImageService = productImageService;
+        this.productPoolService = productPoolService;
     }
 
     @GetMapping
@@ -44,6 +47,12 @@ public class ProductController {
     @PreAuthorize("hasRole('MANUFACTURER')")
     public List<LowStockProductDto> lowStock(Authentication authentication) {
         return productService.lowStock(UUID.fromString(authentication.getName()));
+    }
+
+    @GetMapping("/pools")
+    @PreAuthorize("hasRole('MANUFACTURER')")
+    public List<ManufacturerPoolDto> pools(Authentication authentication) {
+        return productPoolService.listForManufacturer(UUID.fromString(authentication.getName()));
     }
 
     @GetMapping("/{id}")

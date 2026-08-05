@@ -56,6 +56,11 @@ public class User {
     @Column(name = "dark_mode", nullable = false)
     private boolean darkMode;
 
+    // Expo push token for this user's device — the fallback channel alongside
+    // in-app notifications; null until the app registers one post-login.
+    @Column(name = "push_token")
+    private String pushToken;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

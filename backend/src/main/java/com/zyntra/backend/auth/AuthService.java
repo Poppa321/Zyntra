@@ -28,14 +28,17 @@ public class AuthService {
     private final JwtService jwtService;
     private final LoginAttemptService loginAttemptService;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final com.zyntra.backend.email.EmailService emailService;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                        LoginAttemptService loginAttemptService, GoogleTokenVerifier googleTokenVerifier) {
+                        LoginAttemptService loginAttemptService, GoogleTokenVerifier googleTokenVerifier,
+                        com.zyntra.backend.email.EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.loginAttemptService = loginAttemptService;
         this.googleTokenVerifier = googleTokenVerifier;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -57,6 +60,11 @@ public class AuthService {
             .build();
 
         user = userRepository.save(user);
+        try {
+            emailService.sendWelcomeEmail(user.getEmail(), user.getFullName());
+        } catch (Exception ignored) {
+            // Fire-and-forget: email sending must not break registration.
+        }
         return new AuthResponse(jwtService.generateToken(user), UserDto.from(user));
     }
 
@@ -91,6 +99,11 @@ public class AuthService {
                 .darkMode(false)
                 .build();
             user = userRepository.save(user);
+            try {
+                emailService.sendWelcomeEmail(user.getEmail(), user.getFullName());
+            } catch (Exception ignored) {
+                // Do not fail the flow if email sending has a problem.
+            }
         } else if (user.getGoogleId() == null) {
             // An account originally created with email/password is now also
             // reachable via "Sign in with Google" for the same address.
@@ -124,6 +137,12 @@ public class AuthService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+    }
+
+    @Transactional
+    public void registerPushToken(UUID userId, String pushToken) {
+        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+        user.setPushToken(pushToken);
     }
 
     @Transactional

@@ -8,6 +8,7 @@ import com.zyntra.backend.auth.dto.LoginRequest;
 import com.zyntra.backend.auth.dto.RegisterRequest;
 import com.zyntra.backend.auth.dto.ResetPasswordRequest;
 import com.zyntra.backend.auth.dto.RoleRequest;
+import com.zyntra.backend.auth.dto.PushTokenRequest;
 import com.zyntra.backend.auth.dto.UpdateProfileRequest;
 import com.zyntra.backend.auth.dto.UserDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -102,6 +103,13 @@ public class AuthController {
     public UserDto updateMe(Authentication authentication, @Valid @RequestBody UpdateProfileRequest request) {
         UUID userId = UUID.fromString(authentication.getName());
         return authService.updateProfile(userId, request);
+    }
+
+    @PutMapping("/push-token")
+    public ResponseEntity<Void> registerPushToken(Authentication authentication, @Valid @RequestBody PushTokenRequest request) {
+        UUID userId = UUID.fromString(authentication.getName());
+        authService.registerPushToken(userId, request.pushToken());
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/password")

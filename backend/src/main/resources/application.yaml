@@ -55,6 +55,17 @@ zyntra:
     # bare custom scheme. PaymentRedirectController bridges from here into the
     # app's zyntra://payment/callback deep link.
     callback-url: ${PAYSTACK_CALLBACK_URL:https://zyntra-5wo1.onrender.com/api/payments/redirect}
+  twilio:
+    # SMS/WhatsApp delivery-tracking fallback. Left blank, DeliveryMessagingService
+    # logs and no-ops instead of failing — same graceful-degradation pattern as
+    # Google sign-in's blank client-id. Set all three (from Twilio Console) to
+    # activate: account-sid, auth-token, and sms-from (a Twilio phone number).
+    # whatsapp-from defaults to Twilio's public sandbox number — replace with an
+    # approved WhatsApp sender for anything beyond sandbox testing.
+    account-sid: ${TWILIO_ACCOUNT_SID:}
+    auth-token: ${TWILIO_AUTH_TOKEN:}
+    sms-from: ${TWILIO_SMS_FROM:}
+    whatsapp-from: ${TWILIO_WHATSAPP_FROM:+14155238886}
 
 server:
   port: ${PORT:8080}

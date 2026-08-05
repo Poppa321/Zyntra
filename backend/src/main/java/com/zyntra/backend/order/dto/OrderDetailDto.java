@@ -11,10 +11,10 @@ public record OrderDetailDto(
     List<OrderStatusHistoryDto> statusHistory
 ) {
     public static OrderDetailDto from(Order order) {
-        return from(order, null);
+        return from(order, null, false);
     }
 
-    public static OrderDetailDto from(Order order, String paymentStatus) {
+    public static OrderDetailDto from(Order order, String paymentStatus, boolean escrowReleased) {
         List<OrderItemDto> items = order.getItems() == null ? List.of()
             : order.getItems().stream()
                 .filter(java.util.Objects::nonNull)
@@ -29,6 +29,6 @@ public record OrderDetailDto(
                 ))
                 .map(OrderStatusHistoryDto::from)
                 .toList();
-        return new OrderDetailDto(OrderDto.from(order, paymentStatus), items, history);
+        return new OrderDetailDto(OrderDto.from(order, paymentStatus, escrowReleased), items, history);
     }
 }

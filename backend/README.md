@@ -72,6 +72,11 @@ PAYSTACK_CALLBACK_URL=zyntra://payment/callback
 MAIL_USERNAME=your.address@gmail.com
 MAIL_PASSWORD=16-char-app-password
 
+TWILIO_ACCOUNT_SID=ACxxx
+TWILIO_AUTH_TOKEN=xxx
+TWILIO_SMS_FROM=+15551234567
+TWILIO_WHATSAPP_FROM=+14155238886
+
 CORS_ALLOWED_ORIGINS=http://localhost:8081
 
 PORT=8080
@@ -80,6 +85,8 @@ PORT=8080
 Leaving `GOOGLE_CLIENT_ID` blank disables Google sign-in. `JWT_SECRET`, `PAYSTACK_SECRET_KEY`, `MAIL_USERNAME`, and `MAIL_PASSWORD` are required at startup.
 
 `MAIL_USERNAME`/`MAIL_PASSWORD` send "forgot password" emails via Gmail SMTP — no custom domain needed. Setup: enable 2-Step Verification on the Gmail account, then generate an [App Password](https://myaccount.google.com/apppasswords) (Google Account → Security → 2-Step Verification → App passwords) and use that 16-character value as `MAIL_PASSWORD`, not the account's normal login password.
+
+`TWILIO_*` are optional — leaving them blank disables SMS/WhatsApp delivery-tracking updates (shipped/out-for-delivery/delivered); push notifications and in-app notifications still work either way. Get `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN` from the [Twilio Console](https://console.twilio.com), and `TWILIO_SMS_FROM` from a purchased Twilio phone number. `TWILIO_WHATSAPP_FROM` defaults to Twilio's shared sandbox number — fine for testing (recipients must first opt in via the sandbox join code), but needs an approved [WhatsApp sender](https://www.twilio.com/docs/whatsapp) for production.
 
 ### Run locally
 
@@ -284,7 +291,7 @@ PostgreSQL, configured entirely via environment variables (HikariCP pool size 5,
 - **Pagination**: generic `PageResponse<T>` wrapper, server-clamped page sizes (products/orders 1–50, chat messages 1–100).
 - **Search**: combinable free-text + category + manufacturer filters, backed by a Postgres GIN index and `lower()/LIKE` matching.
 - **Scheduled jobs**: hourly cleanup of in-memory rate-limit maps (`@EnableScheduling`).
-- **Notifications**: polling-based (no push), triggered from order lifecycle events.
+- **Notifications**: in-app (polling-based) plus Expo push, triggered from order/inventory/pool lifecycle events. Delivery-tracking transitions (shipped/out-for-delivery/delivered) additionally fan out to SMS/WhatsApp via Twilio when configured.
 
 ## Configuration Reference (`application.yaml`)
 
@@ -301,6 +308,7 @@ zyntra.google.client-id:     GOOGLE_CLIENT_ID (comma-separated; blank disables G
 zyntra.paystack.secret-key:  PAYSTACK_SECRET_KEY (required)
 zyntra.paystack.base-url:    https://api.paystack.co
 zyntra.paystack.callback-url: PAYSTACK_CALLBACK_URL
+zyntra.twilio:                TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_SMS_FROM / TWILIO_WHATSAPP_FROM (optional; blank disables SMS/WhatsApp)
 server.port:                 PORT (default 8080)
 ```
 

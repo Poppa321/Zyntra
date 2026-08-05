@@ -32,4 +32,10 @@ public class PaymentController {
         UUID distributorId = UUID.fromString(authentication.getName());
         return paymentService.verify(distributorId, reference);
     }
+
+    @PostMapping("/{orderId}/release")
+    public PaymentDto releaseEscrow(Authentication authentication, @PathVariable UUID orderId) {
+        UUID distributorId = UUID.fromString(authentication.getName());
+        return paymentService.releaseEscrow(distributorId, orderId);
+    }
 }

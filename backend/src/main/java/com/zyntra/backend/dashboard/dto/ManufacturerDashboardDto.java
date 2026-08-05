@@ -8,5 +8,6 @@ public record ManufacturerDashboardDto(
     long orderCount,
     long productCount,
     long lowStockCount,
+    long activePoolCount,
     List<RecentOrderDto> recentOrders
 ) {}

@@ -6,10 +6,12 @@ import com.zyntra.backend.common.exception.ConflictException;
 import com.zyntra.backend.common.exception.ForbiddenException;
 import com.zyntra.backend.common.exception.NotFoundException;
 import com.zyntra.backend.common.exception.UnprocessableEntityException;
+import com.zyntra.backend.address.AddressRepository;
 import com.zyntra.backend.order.dto.CreateOrderRequest;
 import com.zyntra.backend.order.dto.OrderDetailDto;
 import com.zyntra.backend.order.dto.OrderDto;
 import com.zyntra.backend.order.dto.OrderItemRequest;
+import com.zyntra.backend.messaging.DeliveryMessagingService;
 import com.zyntra.backend.notification.NotificationService;
 import com.zyntra.backend.notification.NotificationType;
 import com.zyntra.backend.payment.PaymentRepository;
@@ -33,7 +35,12 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-    private static final BigDecimal DELIVERY_FEE = new BigDecimal("1200.00");
+    // Delivery fee is variable, not a flat rate: a base handling charge, a
+    // distance surcharge when the distributor is outside the manufacturer's
+    // city, and a per-unit charge scaling with shipment size.
+    private static final BigDecimal DELIVERY_BASE_FEE = new BigDecimal("400.00");
+    private static final BigDecimal DELIVERY_CROSS_CITY_SURCHARGE = new BigDecimal("800.00");
+    private static final BigDecimal DELIVERY_FEE_PER_UNIT = new BigDecimal("2.50");
 
     // Platform commission — deducted from the manufacturer's payout on top of
     // (not added to) what the distributor pays. Applied to subtotal only,
@@ -50,20 +57,33 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final AddressRepository addressRepository;
     private final NotificationService notificationService;
+    private final DeliveryMessagingService deliveryMessagingService;
 
     public OrderService(OrderRepository orderRepository, ProductRepository productRepository,
                          UserRepository userRepository, PaymentRepository paymentRepository,
-                         NotificationService notificationService) {
+                         AddressRepository addressRepository, NotificationService notificationService,
+                         DeliveryMessagingService deliveryMessagingService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
+        this.addressRepository = addressRepository;
         this.notificationService = notificationService;
+        this.deliveryMessagingService = deliveryMessagingService;
     }
 
     private static String partyName(User user) {
         return user.getBusinessName() != null ? user.getBusinessName() : user.getFullName();
+    }
+
+    private static BigDecimal computeDeliveryFee(User distributor, User manufacturer, int totalQuantity) {
+        boolean sameCity = manufacturer.getCity() != null
+            && manufacturer.getCity().equalsIgnoreCase(distributor.getCity());
+        BigDecimal distanceFee = sameCity ? BigDecimal.ZERO : DELIVERY_CROSS_CITY_SURCHARGE;
+        BigDecimal volumeFee = DELIVERY_FEE_PER_UNIT.multiply(BigDecimal.valueOf(totalQuantity));
+        return DELIVERY_BASE_FEE.add(distanceFee).add(volumeFee).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Transactional
@@ -79,6 +99,7 @@ public class OrderService {
         order.setDeliveryAddress(request.deliveryAddress());
 
         BigDecimal subtotal = BigDecimal.ZERO;
+        int totalQuantity = 0;
         for (OrderItemRequest itemRequest : request.items()) {
             Product product = productRepository.findById(itemRequest.productId()).orElseThrow(NotFoundException::new);
 
@@ -98,6 +119,7 @@ public class OrderService {
             BigDecimal unitPrice = PriceResolver.resolveUnitPrice(product, itemRequest.quantity());
             BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(itemRequest.quantity()));
             subtotal = subtotal.add(lineTotal);
+            totalQuantity += itemRequest.quantity();
 
             OrderItem item = new OrderItem();
             item.setOrder(order);
@@ -109,10 +131,12 @@ public class OrderService {
             order.getItems().add(item);
         }
 
+        BigDecimal deliveryFee = computeDeliveryFee(distributor, manufacturer, totalQuantity);
+
         order.setSubtotal(subtotal);
-        order.setDeliveryFee(DELIVERY_FEE);
+        order.setDeliveryFee(deliveryFee);
         order.setPlatformFeeAmount(subtotal.multiply(PLATFORM_FEE_RATE).setScale(2, RoundingMode.HALF_UP));
-        order.setTotal(subtotal.add(DELIVERY_FEE));
+        order.setTotal(subtotal.add(deliveryFee));
         order.appendHistory(OrderStatus.PENDING, "Order placed");
 
         order = orderRepository.save(order);
@@ -120,6 +144,62 @@ public class OrderService {
             "New order received",
             partyName(order.getDistributor()) + " placed order #" + order.getOrderNumber() + " worth ₵" + order.getTotal().toPlainString() + ".");
         return OrderDetailDto.from(order);
+    }
+
+    /**
+     * Places a single-item order on behalf of a distributor whose group-buy pool just
+     * hit its target. Deliberately skips the MOQ check that {@link #create} enforces —
+     * the distributor's quantity is under MOQ by design; it's the pool's aggregate that
+     * met it.
+     */
+    @Transactional
+    public OrderDetailDto createFromPool(UUID distributorId, UUID manufacturerId, UUID productId, int quantity) {
+        User distributor = userRepository.getReferenceById(distributorId);
+        User manufacturer = userRepository.findById(manufacturerId).orElseThrow(NotFoundException::new);
+        Product product = productRepository.findById(productId).orElseThrow(NotFoundException::new);
+
+        if (quantity > product.getStockQty()) {
+            throw new BadRequestException("INSUFFICIENT_STOCK", "Insufficient stock for " + product.getName());
+        }
+
+        Order order = new Order();
+        order.setOrderNumber("ZYN-" + orderRepository.nextOrderNumber());
+        order.setDistributor(distributor);
+        order.setManufacturer(manufacturer);
+        order.setStatus(OrderStatus.PENDING);
+        order.setDeliveryAddress(defaultAddressLine(distributorId));
+
+        BigDecimal unitPrice = PriceResolver.resolveUnitPrice(product, quantity);
+        BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
+
+        OrderItem item = new OrderItem();
+        item.setOrder(order);
+        item.setProductId(product.getId());
+        item.setProductName(product.getName());
+        item.setUnitPrice(unitPrice);
+        item.setQuantity(quantity);
+        item.setLineTotal(lineTotal);
+        order.getItems().add(item);
+
+        BigDecimal deliveryFee = computeDeliveryFee(distributor, manufacturer, quantity);
+        order.setSubtotal(lineTotal);
+        order.setDeliveryFee(deliveryFee);
+        order.setPlatformFeeAmount(lineTotal.multiply(PLATFORM_FEE_RATE).setScale(2, RoundingMode.HALF_UP));
+        order.setTotal(lineTotal.add(deliveryFee));
+        order.appendHistory(OrderStatus.PENDING, "Order placed from group buy pool");
+
+        order = orderRepository.save(order);
+        notificationService.notify(manufacturer.getId(), NotificationType.ORDER,
+            "New order received",
+            partyName(order.getDistributor()) + " placed order #" + order.getOrderNumber() + " worth ₵" + order.getTotal().toPlainString() + " (group buy).");
+        return OrderDetailDto.from(order);
+    }
+
+    private String defaultAddressLine(UUID distributorId) {
+        return addressRepository.findByUserIdAndDefaultAddressTrue(distributorId).stream()
+            .findFirst()
+            .map(address -> address.getLine1() + ", " + address.getCity())
+            .orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -137,10 +217,10 @@ public class OrderService {
     public OrderDetailDto detail(UUID orderId, UUID userId) {
         Order order = orderRepository.findById(orderId).orElseThrow(NotFoundException::new);
         requireParty(order, userId);
-        String paymentStatus = paymentRepository.findByOrderId(orderId)
-            .map(payment -> payment.getStatus().name())
-            .orElse(null);
-        return OrderDetailDto.from(order, paymentStatus);
+        var payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        String paymentStatus = payment != null ? payment.getStatus().name() : null;
+        boolean escrowReleased = payment != null && payment.isEscrowReleased();
+        return OrderDetailDto.from(order, paymentStatus, escrowReleased);
     }
 
     @Transactional
@@ -191,6 +271,8 @@ public class OrderService {
         notificationService.notify(order.getDistributor().getId(), NotificationType.ORDER,
             "Order #" + order.getOrderNumber() + " shipped",
             partyName(order.getManufacturer()) + " marked your order as shipped.");
+        deliveryMessagingService.sendDeliveryUpdate(order.getDistributor().getPhone(),
+            "Zyntra: Order #" + order.getOrderNumber() + " has shipped from " + partyName(order.getManufacturer()) + ".");
         return OrderDetailDto.from(order);
     }
 
@@ -202,6 +284,8 @@ public class OrderService {
         notificationService.notify(order.getDistributor().getId(), NotificationType.ORDER,
             "Order #" + order.getOrderNumber() + " out for delivery",
             "Your order from " + partyName(order.getManufacturer()) + " is out for delivery.");
+        deliveryMessagingService.sendDeliveryUpdate(order.getDistributor().getPhone(),
+            "Zyntra: Order #" + order.getOrderNumber() + " is out for delivery.");
         return OrderDetailDto.from(order);
     }
 
@@ -213,6 +297,8 @@ public class OrderService {
         notificationService.notify(order.getDistributor().getId(), NotificationType.ORDER,
             "Order #" + order.getOrderNumber() + " delivered",
             "Your order from " + partyName(order.getManufacturer()) + " was delivered.");
+        deliveryMessagingService.sendDeliveryUpdate(order.getDistributor().getPhone(),
+            "Zyntra: Order #" + order.getOrderNumber() + " was delivered. Confirm receipt in the app to release payment.");
         return OrderDetailDto.from(order);
     }
 

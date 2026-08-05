@@ -16,6 +16,12 @@ public record OrderDto(
     String distributorBusinessName,
     UUID manufacturerId,
     String manufacturerBusinessName,
+    // The manufacturer's city, not their business name, is what actually
+    // geocodes to a real map point — the origin marker on the order-tracking
+    // map used to be built from the business name, which almost never
+    // resolves and silently fell back to the same fixed Kumasi coordinates
+    // for every order.
+    String manufacturerCity,
     OrderStatus status,
     String deliveryAddress,
     // What was ordered, e.g. "4 x Palm Oil (25L Jerrycan)" or, for multi-item
@@ -30,13 +36,14 @@ public record OrderDto(
     Instant eta,
     Instant createdAt,
     Instant updatedAt,
-    String paymentStatus
+    String paymentStatus,
+    boolean escrowReleased
 ) {
     public static OrderDto from(Order order) {
-        return from(order, null);
+        return from(order, null, false);
     }
 
-    public static OrderDto from(Order order, String paymentStatus) {
+    public static OrderDto from(Order order, String paymentStatus, boolean escrowReleased) {
         var distributor = order.getDistributor();
         var manufacturer = order.getManufacturer();
 
@@ -47,6 +54,7 @@ public record OrderDto(
             distributor != null ? distributor.getBusinessName() : null,
             manufacturer != null ? manufacturer.getId() : null,
             manufacturer != null ? manufacturer.getBusinessName() : null,
+            manufacturer != null ? manufacturer.getCity() : null,
             order.getStatus(),
             order.getDeliveryAddress(),
             buildItemsSummary(order.getItems()),
@@ -58,7 +66,8 @@ public record OrderDto(
             order.getEta(),
             order.getCreatedAt(),
             order.getUpdatedAt(),
-            paymentStatus
+            paymentStatus,
+            escrowReleased
         );
     }
 

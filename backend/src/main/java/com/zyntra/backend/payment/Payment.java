@@ -43,6 +43,15 @@ public class Payment {
     @Column(name = "paid_at")
     private Instant paidAt;
 
+    // Held by the platform once payment succeeds; only the distributor
+    // releasing it (after confirming delivery) makes it payable to the
+    // manufacturer — this is the escrow protection itself, not just a label.
+    @Column(name = "escrow_released", nullable = false)
+    private boolean escrowReleased = false;
+
+    @Column(name = "escrow_released_at")
+    private Instant escrowReleasedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -46,4 +46,23 @@ public class EmailService {
             log.error("Failed to send password reset email to {}", toEmail, ex);
         }
     }
+
+    @Async
+    public void sendWelcomeEmail(String toEmail, String fullName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
+        message.setTo(toEmail);
+        message.setSubject("Welcome to Zyntra");
+        String body = "Hi " + (fullName != null ? fullName : "there") + ",\n\n"
+            + "Welcome to Zyntra — we're excited to have you on board. You can now start browsing products, "
+            + "message manufacturers, and place orders.\n\n"
+            + "If you have any questions, reply to this email and we'll help you out.\n\n"
+            + "— The Zyntra team";
+        message.setText(body);
+        try {
+            mailSender.send(message);
+        } catch (MailException ex) {
+            log.error("Failed to send welcome email to {}", toEmail, ex);
+        }
+    }
 }

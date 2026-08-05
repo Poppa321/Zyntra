@@ -10,9 +10,18 @@ public record PaymentDto(
     UUID orderId,
     String reference,
     PaymentStatus status,
-    Instant paidAt
+    Instant paidAt,
+    boolean escrowReleased,
+    Instant escrowReleasedAt
 ) {
     public static PaymentDto from(Payment payment) {
-        return new PaymentDto(payment.getOrder().getId(), payment.getReference(), payment.getStatus(), payment.getPaidAt());
+        return new PaymentDto(
+            payment.getOrder().getId(),
+            payment.getReference(),
+            payment.getStatus(),
+            payment.getPaidAt(),
+            payment.isEscrowReleased(),
+            payment.getEscrowReleasedAt()
+        );
     }
 }
