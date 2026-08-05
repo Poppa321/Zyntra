@@ -44,7 +44,10 @@ public class AdminController {
             throw new ForbiddenException("FORBIDDEN", "Invalid or missing admin key");
         }
 
-        Object[] totals = orderRepository.sumPlatformCommission();
+        // Aggregate query with no GROUP BY over the whole table always yields
+        // exactly one row (COUNT is 0, SUMs are the COALESCE default, if the
+        // table is empty) — never zero rows — so get(0) is always safe here.
+        Object[] totals = orderRepository.sumPlatformCommission().get(0);
         BigDecimal totalCommission = (BigDecimal) totals[0];
         BigDecimal totalGmv = (BigDecimal) totals[1];
         long orderCount = (Long) totals[2];

@@ -55,12 +55,15 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     // Platform-wide commission summary — realized (delivered) orders only,
     // since that's revenue actually earned rather than still in flight.
+    // Declared as List<Object[]> (not a bare Object[]) — Spring Data JPA
+    // wraps a single-row multi-column projection inside another array when
+    // the return type is a raw array, so totals.get(0) is the actual row.
     @Query("""
         SELECT COALESCE(SUM(o.platformFeeAmount), 0), COALESCE(SUM(o.total), 0), COUNT(o)
         FROM Order o
         WHERE o.status = com.zyntra.backend.order.OrderStatus.DELIVERED
         """)
-    Object[] sumPlatformCommission();
+    List<Object[]> sumPlatformCommission();
 
     // Raw (createdAt, platformFeeAmount) pairs for delivered orders — bucketed
     // into months in Java (AdminController) rather than via a DB-specific
