@@ -39,7 +39,11 @@ public class SecurityConfig {
         "/api/payments/redirect",
         // Not user-auth at all — gated by its own X-Admin-Key header check
         // inside AdminController, since there's no admin role in the product.
-        "/api/admin/**"
+        "/api/admin/**",
+        // The static dashboard page itself (src/main/resources/static/admin/) —
+        // distinct from /api/admin/** above. The page is harmless to serve
+        // publicly; it's useless without the X-Admin-Key the API call needs.
+        "/admin/**"
     };
 
     private static final String[] PUBLIC_PATHS = {
