@@ -1,6 +1,8 @@
 package com.zyntra.backend.common;
 
 import com.zyntra.backend.common.exception.ApiException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiError> handleApiException(ApiException ex) {
@@ -57,6 +61,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+        // Every other handler above maps a known, expected condition — this one
+        // catches anything unanticipated, which by definition means something
+        // needs fixing. Silently returning 500 with no log line was making
+        // every unexpected error in prod invisible; log it so it's diagnosable.
+        log.error("Unhandled exception", ex);
         return ResponseEntity.internalServerError()
             .body(ApiError.of(500, "INTERNAL_ERROR", "An unexpected error occurred"));
     }
