@@ -62,12 +62,14 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
         """)
     Object[] sumPlatformCommission();
 
+    // Raw (createdAt, platformFeeAmount) pairs for delivered orders — bucketed
+    // into months in Java (AdminController) rather than via a DB-specific
+    // date-format function, which is one less thing that can silently fail
+    // to translate across Hibernate/dialect versions.
     @Query("""
-        SELECT FUNCTION('to_char', o.createdAt, 'YYYY-MM'), COALESCE(SUM(o.platformFeeAmount), 0), COUNT(o)
-        FROM Order o
+        SELECT o.createdAt, o.platformFeeAmount FROM Order o
         WHERE o.status = com.zyntra.backend.order.OrderStatus.DELIVERED
-        GROUP BY FUNCTION('to_char', o.createdAt, 'YYYY-MM')
-        ORDER BY FUNCTION('to_char', o.createdAt, 'YYYY-MM') DESC
+        ORDER BY o.createdAt DESC
         """)
-    List<Object[]> sumPlatformCommissionByMonth();
+    List<Object[]> findDeliveredCommissionRows();
 }
