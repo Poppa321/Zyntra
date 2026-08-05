@@ -32,7 +32,7 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.border,
     },
     label: {
-      fontSize: 11,
+      fontSize: 12,
     },
   });
 }

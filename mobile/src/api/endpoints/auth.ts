@@ -36,3 +36,7 @@ export function resetPassword(payload: { email: string; code: string; password: 
 export function changePassword(payload: { currentPassword: string; newPassword: string }) {
   return apiClient.put<void>("/auth/password", payload).then(() => undefined);
 }
+
+export function registerPushToken(pushToken: string) {
+  return apiClient.put<void>("/auth/push-token", { pushToken }).then(() => undefined);
+}

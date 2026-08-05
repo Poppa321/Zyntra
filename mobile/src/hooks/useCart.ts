@@ -7,7 +7,14 @@ import type { CartItem, Product } from "@/types/domain";
 // used as a lightweight store) and is translated into CreateOrderRequest.items
 // at checkout (see useOrders.ts).
 const CART_QUERY_KEY = ["cart"];
-const DELIVERY_FEE = 1200;
+
+// Mirrors the base + per-unit portion of the server's delivery-fee formula
+// (see OrderService.computeDeliveryFee) so the cart preview scales with
+// order size instead of showing a flat rate. The cross-city surcharge isn't
+// mirrored here since the manufacturer's city isn't loaded into cart items —
+// the final fee (surcharge included, if it applies) is confirmed at checkout.
+const DELIVERY_BASE_FEE = 400;
+const DELIVERY_FEE_PER_UNIT = 2.5;
 
 export function useCartQuery() {
   const query = useQuery({
@@ -19,9 +26,11 @@ export function useCartQuery() {
 
   const items = query.data ?? [];
   const subtotal = items.reduce((sum, item) => sum + item.product.basePrice * item.quantity, 0);
-  const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0);
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const deliveryFee = items.length > 0 ? DELIVERY_BASE_FEE + DELIVERY_FEE_PER_UNIT * totalQuantity : 0;
+  const total = subtotal + deliveryFee;
 
-  return { ...query, items, subtotal, deliveryFee: DELIVERY_FEE, total };
+  return { ...query, items, subtotal, deliveryFee, total };
 }
 
 function updateLocalCart(

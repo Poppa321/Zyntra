@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getManufacturerDashboard } from "@/api/endpoints/dashboard";
-import { createProduct, getProduct, listProducts, updateStock, uploadProductPhoto } from "@/api/endpoints/products";
+import { createProduct, getProduct, listManufacturerPools, listProducts, updateStock, uploadProductPhoto } from "@/api/endpoints/products";
 import { mapDashboard, mapInventoryItem } from "@/api/mappers";
 import { useSessionQuery } from "@/hooks/useAuth";
 import type { ProductCreateRequest } from "@/api/types";
@@ -40,11 +40,24 @@ export function useDashboardQuery() {
         ordersFulfilled: 0,
         productCount: 0,
         lowStockCount: 0,
+        activePoolCount: 0,
         inquiryCount: 0,
         lowStockProductNames: [] as string[],
         recentOrders: [] as { id: string; total: string; tag: "NEW" | "SHIPPED" }[],
       },
   };
+}
+
+export function useManufacturerPoolsQuery() {
+  const { data: user } = useSessionQuery();
+
+  const query = useQuery({
+    queryKey: ["manufacturer-pools", user?.id],
+    queryFn: listManufacturerPools,
+    enabled: !!user?.id,
+  });
+
+  return { ...query, data: query.data ?? [] };
 }
 
 export function useCreateProductMutation() {

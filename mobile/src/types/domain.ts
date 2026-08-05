@@ -15,6 +15,7 @@ export type Product = {
   imageUrl?: string;
   manufacturer: string;
   manufacturerId: string;
+  manufacturerVerified: boolean;
   category: string;
   rating: number;
   reviewCount: number;
@@ -29,7 +30,18 @@ export type Product = {
   featured: boolean;
 };
 
-export const categories = ["All", "Grains", "Flour", "Oils", "Cocoa", "Feed", "Confectionery"];
+export const categories = [
+  "All",
+  "Grains",
+  "Flour",
+  "Oils",
+  "Cocoa",
+  "Feed",
+  "Confectionery",
+  "Textiles",
+  "Construction",
+  "Beverages",
+];
 
 export type Manufacturer = {
   id: string;

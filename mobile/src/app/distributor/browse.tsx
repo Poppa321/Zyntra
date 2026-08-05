@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { MagnifyingGlass, Package, X } from "phosphor-react-native";
+import { MagnifyingGlass, Package, WifiSlash, X } from "phosphor-react-native";
 
 import { Chip } from "@/components/Chip";
 import { ManufacturerCard, MANUFACTURER_CARD_WIDTH } from "@/components/ManufacturerCard";
@@ -10,6 +10,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
+import { useIsOffline } from "@/hooks/useIsOffline";
 import { useProductsQuery, useTopManufacturersQuery } from "@/hooks/useProducts";
 import { categories } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
@@ -17,6 +18,7 @@ import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext
 export default function Browse() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const isOffline = useIsOffline();
   const { data: allProducts } = useProductsQuery(activeCategory);
   const { data: allManufacturers } = useTopManufacturersQuery();
   const { isDark } = useTheme();
@@ -46,6 +48,25 @@ export default function Browse() {
   }, [allManufacturers, isSearching, normalizedQuery]);
 
   const showManufacturers = manufacturers.length > 0;
+
+  if (isOffline) {
+    return (
+      <ScreenContainer edges={["top"]}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <View style={styles.offlineWrap}>
+          <View style={styles.offlineIconWell}>
+            <WifiSlash size={32} color={colors.textMuted} weight="bold" />
+          </View>
+          <Text weight="bold" style={styles.offlineTitle}>
+            You&apos;re offline
+          </Text>
+          <Text weight="regular" color={colors.textMuted} style={styles.offlineSubtitle}>
+            Products aren&apos;t available without a connection. Go back online to keep browsing.
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer edges={["top"]}>
@@ -201,6 +222,31 @@ function createStyles(colors: ThemeColors) {
   },
   emptyText: {
     fontSize: 13,
+  },
+  offlineWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    gap: 10,
+  },
+  offlineIconWell: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.cardBg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  offlineTitle: {
+    fontSize: 18,
+    color: colors.textPrimary,
+  },
+  offlineSubtitle: {
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: "center",
   },
   });
 }

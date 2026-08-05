@@ -34,13 +34,25 @@ import type {
 // an N+1 query), so cards fall back to a neutral placeholder until opened.
 const PLACEHOLDER_RATING = 4.8;
 
+// The backend requires a non-blank name for every product, but a handful of
+// screens (product detail's title, chat previews) render `product.name`
+// directly with no fallback of their own — any stale/legacy row that slipped
+// through before that validation existed renders as a blank heading instead
+// of a visible bug. Guaranteeing a non-empty name once, here, means every
+// consumer is covered without each screen needing to remember its own guard.
+function resolveProductName(name: string | null | undefined): string {
+  const trimmed = name?.trim();
+  return trimmed ? trimmed : "Unnamed product";
+}
+
 export function mapProductCard(dto: ProductCardDto): Product {
   return {
     id: dto.id,
-    name: dto.name,
+    name: resolveProductName(dto.name),
     imageUrl: dto.imageUrl,
     manufacturer: dto.manufacturerName,
     manufacturerId: dto.manufacturerId,
+    manufacturerVerified: dto.verified,
     category: "",
     rating: PLACEHOLDER_RATING,
     reviewCount: 0,
@@ -71,10 +83,11 @@ export function mapProductDetail(dto: ProductDetailDto): Product {
 
   return {
     id: dto.id,
-    name: dto.name,
+    name: resolveProductName(dto.name),
     imageUrl: dto.imageUrl,
     manufacturer: dto.manufacturerName,
     manufacturerId: dto.manufacturerId,
+    manufacturerVerified: dto.verified,
     category: dto.category,
     rating: dto.reviewCount > 0 ? dto.averageRating : PLACEHOLDER_RATING,
     reviewCount: dto.reviewCount,
@@ -223,6 +236,7 @@ export function mapDashboard(dto: ManufacturerDashboardDto, businessName: string
     ordersFulfilled: dto.orderCount,
     productCount: dto.productCount,
     lowStockCount: dto.lowStockCount,
+    activePoolCount: dto.activePoolCount,
     inquiryCount: 0,
     lowStockProductNames: [] as string[],
     recentOrders: dto.recentOrders.map((order) => ({

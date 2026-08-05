@@ -18,7 +18,13 @@ export function ManufacturerCard({ manufacturer, onPress }: ManufacturerCardProp
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 },
+      ]}
+    >
       <View style={styles.banner}>
         <Factory size={22} color={colors.pureWhite} weight="fill" />
         <View style={styles.ratingBadge}>
@@ -53,9 +59,15 @@ function createStyles(colors: ThemeColors) {
       width: CARD_WIDTH,
       borderRadius: radius.card,
       overflow: "hidden",
-    },
-    cardPressed: {
-      opacity: 0.85,
+      backgroundColor: colors.cardBg,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 16,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: colors.border,
+      margin: 4,
     },
     banner: {
       height: 64,
@@ -94,10 +106,10 @@ function createStyles(colors: ThemeColors) {
       gap: 2,
     },
     name: {
-      fontSize: 12,
+      fontSize: 13,
     },
     tagline: {
-      fontSize: 10,
+      fontSize: 11,
     },
   });
 }

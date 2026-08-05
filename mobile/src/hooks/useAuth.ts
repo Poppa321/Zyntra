@@ -1,9 +1,14 @@
-import axios from "axios";
+import { isAxiosError } from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import * as authApi from "@/api/endpoints/auth";
 import { getAuthToken, setAuthToken } from "@/api/client";
-import type { AuthResponseDto, GoogleAuthPayload, LoginPayload, RegisterPayload } from "@/api/types";
+import type {
+  AuthResponseDto,
+  GoogleAuthPayload,
+  LoginPayload,
+  RegisterPayload,
+} from "@/api/types";
 
 export function useLoginMutation() {
   return useMutation({
@@ -29,7 +34,9 @@ export function useRegisterMutation() {
 
 export function useGoogleAuthMutation() {
   return useMutation({
-    mutationFn: async (payload: GoogleAuthPayload): Promise<AuthResponseDto> => {
+    mutationFn: async (
+      payload: GoogleAuthPayload,
+    ): Promise<AuthResponseDto> => {
       const result = await authApi.googleAuth(payload);
       await setAuthToken(result.token);
       return result;
@@ -58,7 +65,7 @@ export function useSessionQuery() {
         // leave the stored token alone — otherwise a transient blip on cold
         // start signs the user out for good, which is exactly the bug this
         // used to cause: forced re-login on every app open.
-        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        const status = isAxiosError(error) ? error.response?.status : undefined;
         if (status === 401 || status === 403) {
           await setAuthToken(null);
           return null;
@@ -83,12 +90,14 @@ export function useForgotPasswordMutation() {
 
 export function useResetPasswordMutation() {
   return useMutation({
-    mutationFn: (input: { email: string; code: string; password: string }) => authApi.resetPassword(input),
+    mutationFn: (input: { email: string; code: string; password: string }) =>
+      authApi.resetPassword(input),
   });
 }
 
 export function useChangePasswordMutation() {
   return useMutation({
-    mutationFn: (input: { currentPassword: string; newPassword: string }) => authApi.changePassword(input),
+    mutationFn: (input: { currentPassword: string; newPassword: string }) =>
+      authApi.changePassword(input),
   });
 }

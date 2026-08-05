@@ -147,7 +147,7 @@ function createStyles(colors: ThemeColors) {
       marginTop: 8,
     },
     footerText: {
-      fontSize: 13,
+      fontSize: 15,
     },
   });
 }

@@ -117,6 +117,7 @@ function createStyles(colors: ThemeColors) {
     },
     card: {
       borderRadius: radius.card,
+      backgroundColor: colors.cardBg,
       padding: 16,
       gap: 10,
     },

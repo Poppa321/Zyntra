@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Bell, MagnifyingGlass, Package } from "phosphor-react-native";
+import { Bell, MagnifyingGlass, Package, WifiSlash } from "phosphor-react-native";
 
 import { Chip } from "@/components/Chip";
 import { IconButton } from "@/components/IconButton";
@@ -11,6 +11,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
+import { useIsOffline } from "@/hooks/useIsOffline";
 import { useSessionQuery } from "@/hooks/useAuth";
 import { useNotificationsQuery } from "@/hooks/useNotifications";
 import { useProductsQuery, useTopManufacturersQuery } from "@/hooks/useProducts";
@@ -20,15 +21,16 @@ import { radius } from "@/theme/spacing";
 import { type ThemeColors, useTheme } from "@/theme/ThemeContext";
 
 function greetingForHour(hour: number) {
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "Good morning 🌅";
+  if (hour < 18) return "Good afternoon ☕";
+  return "Good evening 🌙";
 }
 
 export default function Discover() {
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const isOffline = useIsOffline();
   const { data: filtered } = useProductsQuery(activeCategory);
   const { data: allProducts } = useProductsQuery("All");
   const { data: manufacturers } = useTopManufacturersQuery();
@@ -38,6 +40,25 @@ export default function Discover() {
   const featuredProducts = allProducts.filter((product) => product.featured);
   const firstName = session?.fullName?.split(" ")[0];
   const greeting = `${greetingForHour(new Date().getHours())}${firstName ? `, ${firstName}` : ""}`;
+
+  if (isOffline) {
+    return (
+      <ScreenContainer edges={["top"]} topPadding={0}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <View style={styles.offlineWrap}>
+          <View style={styles.offlineIconWell}>
+            <WifiSlash size={32} color={colors.textMuted} weight="bold" />
+          </View>
+          <Text weight="bold" style={styles.offlineTitle}>
+            You&apos;re offline
+          </Text>
+          <Text weight="regular" color={colors.textMuted} style={styles.offlineSubtitle}>
+            Products aren&apos;t available without a connection. Go back online to keep browsing.
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer edges={["top"]} topPadding={0}>
@@ -271,6 +292,31 @@ function createStyles(colors: ThemeColors) {
     },
     emptyText: {
       fontSize: 13,
+    },
+    offlineWrap: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 32,
+      gap: 10,
+    },
+    offlineIconWell: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colors.cardBg,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 8,
+    },
+    offlineTitle: {
+      fontSize: 18,
+      color: colors.textPrimary,
+    },
+    offlineSubtitle: {
+      fontSize: 14,
+      lineHeight: 21,
+      textAlign: "center",
     },
   });
 }

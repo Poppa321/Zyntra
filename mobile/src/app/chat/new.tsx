@@ -142,6 +142,7 @@ function createStyles(colors: ThemeColors) {
     alignItems: "center",
     gap: 12,
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
   },
   cardPressed: {

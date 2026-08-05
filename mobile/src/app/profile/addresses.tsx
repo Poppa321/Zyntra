@@ -176,6 +176,7 @@ function createStyles(colors: ThemeColors) {
   },
   form: {
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 16,
     gap: 14,
     marginBottom: 16,
@@ -199,6 +200,7 @@ function createStyles(colors: ThemeColors) {
     flexDirection: "row",
     alignItems: "flex-start",
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
     gap: 14,
   },

@@ -1,13 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CaretLeft, ChatCircleText, Minus, Plus, SealCheck, ShoppingCartSimple } from "phosphor-react-native";
+import {
+  CaretLeft,
+  ChatCircleText,
+  Minus,
+  Plus,
+  SealCheck,
+  ShoppingCartSimple,
+} from "phosphor-react-native";
 
 import { getApiErrorMessage } from "@/api/client";
 import { showAlert } from "@/lib/alert";
 import { Badge } from "@/components/Badge";
+import { GroupBuyCard } from "@/components/GroupBuyCard";
 import { IconButton } from "@/components/IconButton";
 import { ImageCarousel } from "@/components/ImageCarousel";
 import { ProductReviews } from "@/components/ProductReviews";
@@ -16,14 +32,13 @@ import { useSessionQuery } from "@/hooks/useAuth";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useAddToCartMutation } from "@/hooks/useCart";
 import { useProductQuery } from "@/hooks/useProducts";
-import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
+import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: product, isLoading, isError } = useProductQuery(id);
   const insets = useSafeAreaInsets();
-  const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -32,12 +47,21 @@ export default function ProductDetail() {
       <View style={[styles.container, styles.loadingState]}>
         <StatusBar style="light" />
         <IconButton
-          icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
+          icon={
+            <CaretLeft size={20} color={colors.textPrimary} weight="bold" />
+          }
           onPress={() => router.back()}
-          style={StyleSheet.flatten([styles.backButton, { top: insets.top + 12 }])}
+          style={StyleSheet.flatten([
+            styles.backButton,
+            { top: insets.top + 12 },
+          ])}
         />
         <Text weight="medium" style={styles.loadingLabel}>
-          {isLoading ? "Loading product…" : isError ? "Couldn't load this product." : "Product not found."}
+          {isLoading
+            ? "Loading product…"
+            : isError
+              ? "Couldn't load this product."
+              : "Product not found."}
         </Text>
       </View>
     );
@@ -46,13 +70,16 @@ export default function ProductDetail() {
   return <ProductDetailContent product={product} />;
 }
 
-function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typeof useProductQuery>["data"]> }) {
+function ProductDetailContent({
+  product,
+}: {
+  product: NonNullable<ReturnType<typeof useProductQuery>["data"]>;
+}) {
   const [quantity, setQuantity] = useState(product.baseQty);
   const addToCart = useAddToCartMutation();
   const startConversation = useStartConversationMutation();
   const { data: session } = useSessionQuery();
   const insets = useSafeAreaInsets();
-  const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -60,12 +87,15 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
     if (!product.manufacturerId) return;
     startConversation.mutate(product.manufacturerId, {
       onSuccess: (conversation) => router.push(`/chat/${conversation.id}`),
-      onError: (error) => showAlert("Couldn't open chat", getApiErrorMessage(error)),
+      onError: (error) =>
+        showAlert("Couldn't open chat", getApiErrorMessage(error)),
     });
   }
 
   useEffect(() => {
-    setQuantity(product.baseQty);
+    Promise.resolve().then(() => {
+      setQuantity(product.baseQty);
+    });
   }, [product.baseQty, product.id]);
 
   // The tier the current quantity falls into drives both the highlight and the price.
@@ -92,109 +122,161 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
       <StatusBar style="light" />
       <View style={styles.imageArea}>
         <ImageCarousel imageUrl={product.imageUrl} />
+        <LinearGradient
+          colors={["rgba(8,15,26,0.55)", "rgba(8,15,26,0)", "rgba(8,15,26,0.35)"]}
+          locations={[0, 0.45, 1]}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
         <IconButton
-          icon={<CaretLeft size={20} color={colors.textPrimary} weight="bold" />}
+          icon={
+            <CaretLeft size={20} color={colors.textPrimary} weight="bold" />
+          }
           onPress={() => router.back()}
-          style={StyleSheet.flatten([styles.backButton, { top: insets.top + 12 }])}
+          style={StyleSheet.flatten([
+            styles.backButton,
+            { top: insets.top + 12 },
+          ])}
         />
       </View>
 
-      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text weight="extraBold" style={styles.name}>
-          {product.name}
-        </Text>
-        <View style={styles.manufacturerRow}>
-          <Text weight="medium" style={styles.manufacturer}>
-            {product.manufacturer} · Verified
+      <KeyboardAvoidingView
+        style={styles.flexOne}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          style={styles.sheet}
+          contentContainerStyle={styles.sheetContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text weight="extraBold" style={styles.name}>
+            {product.name}
           </Text>
-          <SealCheck size={16} color={colors.gold} weight="fill" />
-        </View>
-        <View style={styles.stockRow}>
-          <Badge label={product.inStock} variant="success" />
-          {!!product.manufacturerId && (
-            <Pressable
-              onPress={handleMessageManufacturer}
-              style={({ pressed }) => [styles.messageButton, pressed && styles.messageButtonPressed]}
-            >
-              <ChatCircleText size={15} color={colors.navy} weight="fill" />
-              <Text weight="semiBold" color={colors.navy} style={styles.messageLabel}>
-                {startConversation.isPending ? "Opening…" : "Message manufacturer"}
-              </Text>
-            </Pressable>
-          )}
-        </View>
-
-        <Text weight="extraBold" style={styles.sectionLabel}>
-          WHOLESALE PRICING
-        </Text>
-        <View style={styles.tiers}>
-          {product.tiers.map((tier) => {
-            const selected = tier === activeTier;
-            return (
+          <View style={styles.manufacturerRow}>
+            <Text weight="medium" style={styles.manufacturer}>
+              {product.manufacturer} · Verified
+            </Text>
+            <SealCheck size={16} color={colors.gold} weight="fill" />
+          </View>
+          <View style={styles.stockRow}>
+            <Badge label={product.inStock} variant="success" />
+            {!!product.manufacturerId && (
               <Pressable
-                key={tier.range}
-                onPress={() => handleSelectTier(tier.minQty)}
+                onPress={handleMessageManufacturer}
                 style={({ pressed }) => [
-                  styles.tierRow,
-                  selected && styles.tierRowSelected,
-                  pressed && styles.tierRowPressed,
+                  styles.messageButton,
+                  pressed && styles.messageButtonPressed,
                 ]}
               >
-                <Text weight="medium" color={selected ? colors.pureWhite : colors.textPrimary} style={styles.tierRange}>
-                  {tier.range}
-                </Text>
-                {tier.best && <Badge label="BEST" variant="gold" />}
+                <ChatCircleText size={15} color={colors.navy} weight="fill" />
                 <Text
-                  weight="extraBold"
-                  color={selected ? colors.gold : colors.textPrimary}
-                  style={styles.tierPrice}
+                  weight="semiBold"
+                  color={colors.navy}
+                  style={styles.messageLabel}
                 >
-                  {tier.price}
+                  {startConversation.isPending
+                    ? "Opening…"
+                    : "Message manufacturer"}
                 </Text>
               </Pressable>
-            );
-          })}
-        </View>
-        <Text weight="regular" color={colors.textMuted} style={styles.tierHint}>
-          Tap a tier to order at that quantity — bigger orders unlock better unit prices.
-        </Text>
+            )}
+          </View>
 
-        <Text weight="medium" style={styles.moqLine}>
-          {product.moq} · {product.leadTime}
-        </Text>
+          <Text weight="extraBold" style={styles.sectionLabel}>
+            WHOLESALE PRICING
+          </Text>
+          <View style={styles.tiers}>
+            {product.tiers.map((tier) => {
+              const selected = tier === activeTier;
+              return (
+                <Pressable
+                  key={tier.range}
+                  onPress={() => handleSelectTier(tier.minQty)}
+                  style={({ pressed }) => [
+                    styles.tierRow,
+                    selected && styles.tierRowSelected,
+                    pressed && styles.tierRowPressed,
+                  ]}
+                >
+                  <Text
+                    weight="medium"
+                    color={selected ? colors.pureWhite : colors.textPrimary}
+                    style={styles.tierRange}
+                  >
+                    {tier.range}
+                  </Text>
+                  {tier.best && <Badge label="BEST" variant="gold" />}
+                  <Text
+                    weight="extraBold"
+                    color={selected ? colors.gold : colors.textPrimary}
+                    style={styles.tierPrice}
+                  >
+                    {tier.price}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text
+            weight="regular"
+            color={colors.textMuted}
+            style={styles.tierHint}
+          >
+            Tap a tier to order at that quantity — bigger orders unlock better
+            unit prices.
+          </Text>
 
-        <View style={styles.footerRow}>
-          <View style={styles.stepper}>
-            <Pressable
-              onPress={() => setQuantity((q) => Math.max(product.baseQty, q - product.baseQty))}
-              hitSlop={15}
-            >
-              <Minus size={16} color={colors.textPrimary} weight="bold" />
-            </Pressable>
-            <Text weight="extraBold" style={styles.stepperValue}>
-              {quantity}
-            </Text>
-            <Pressable onPress={() => setQuantity((q) => q + product.baseQty)} hitSlop={15}>
-              <Plus size={16} color={colors.textPrimary} weight="bold" />
+          <Text weight="medium" style={styles.moqLine}>
+            {product.moq} · {product.leadTime}
+          </Text>
+
+          {session?.role === "DISTRIBUTOR" && (
+            <GroupBuyCard productId={product.id} moq={product.baseQty} unit={product.unit} />
+          )}
+
+          <View style={styles.footerRow}>
+            <View style={styles.stepper}>
+              <Pressable
+                onPress={() =>
+                  setQuantity((q) =>
+                    Math.max(product.baseQty, q - product.baseQty),
+                  )
+                }
+                hitSlop={15}
+              >
+                <Minus size={16} color={colors.textPrimary} weight="bold" />
+              </Pressable>
+              <Text weight="extraBold" style={styles.stepperValue}>
+                {quantity}
+              </Text>
+              <Pressable
+                onPress={() => setQuantity((q) => q + product.baseQty)}
+                hitSlop={15}
+              >
+                <Plus size={16} color={colors.textPrimary} weight="bold" />
+              </Pressable>
+            </View>
+
+            <Pressable style={styles.addButton} onPress={handleAdd}>
+              <Text
+                weight="semiBold"
+                color={colors.pureWhite}
+                style={styles.addLabel}
+              >
+                Add — ₵{total.toLocaleString()}
+              </Text>
+              <ShoppingCartSimple size={20} color={colors.gold} weight="fill" />
             </Pressable>
           </View>
 
-          <Pressable style={styles.addButton} onPress={handleAdd}>
-            <Text weight="semiBold" color={colors.pureWhite} style={styles.addLabel}>
-              Add — ₵{total.toLocaleString()}
-            </Text>
-            <ShoppingCartSimple size={20} color={colors.gold} weight="fill" />
-          </Pressable>
-        </View>
-
-        <ProductReviews
-          productId={product.id}
-          averageRating={product.rating}
-          reviewCount={product.reviewCount}
-          canReview={session?.role === "DISTRIBUTOR"}
-        />
-      </ScrollView>
+          <ProductReviews
+            productId={product.id}
+            averageRating={product.rating}
+            reviewCount={product.reviewCount}
+            canReview={session?.role === "DISTRIBUTOR"}
+          />
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -202,148 +284,148 @@ function ProductDetailContent({ product }: { product: NonNullable<ReturnType<typ
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.offWhite,
-  },
-  flexOne: {
-    flex: 1,
-  },
-  imageArea: {
-    height: 310,
-  },
-  loadingState: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingLabel: {
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  backButton: {
-    position: "absolute",
-    left: 20,
-  },
-  sheet: {
-    flex: 1,
-    marginTop: -30,
-    backgroundColor: colors.white,
-    borderTopLeftRadius: radius.md,
-    borderTopRightRadius: radius.md,
-  },
-  sheetContent: {
-    padding: 18,
-    gap: 12,
-    paddingBottom: 32,
-  },
-  name: {
-    fontSize: 24,
-    color: colors.textPrimary,
-  },
-  manufacturerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  stockRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  messageButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    height: 34,
-    paddingHorizontal: 10,
-    borderWidth: 1.5,
-    borderColor: colors.navy,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-  },
-  messageButtonPressed: {
-    opacity: 0.75,
-  },
-  messageLabel: {
-    fontSize: 13,
-  },
-  manufacturer: {
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  sectionLabel: {
-    marginTop: 16,
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  tiers: {
-    gap: 8,
-  },
-  tierRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: 46,
-    paddingHorizontal: 12,
-    backgroundColor: colors.accentTint,
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: colors.gold + "33",
-  },
-  tierRowSelected: {
-    backgroundColor: colors.navy,
-    borderColor: colors.navy,
-  },
-  tierRowPressed: {
-    opacity: 0.85,
-  },
-  tierHint: {
-    fontSize: 13,
-  },
-  tierRange: {
-    fontSize: 14,
-  },
-  tierPrice: {
-    fontSize: 15,
-  },
-  moqLine: {
-    marginTop: 8,
-    fontSize: 13,
-    color: colors.textPrimary,
-  },
-  footerRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    gap: 12,
-  },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: 120,
-    height: 52,
-    paddingHorizontal: 16,
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-  },
-  stepperValue: {
-    fontSize: 17,
-    color: colors.textPrimary,
-  },
-  addButton: {
-    flex: 1,
-    height: 52,
-    borderRadius: radius.sm,
-    backgroundColor: colors.navy,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
-  addLabel: {
-    fontSize: 16,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: colors.offWhite,
+    },
+    flexOne: {
+      flex: 1,
+    },
+    imageArea: {
+      height: 310,
+    },
+    loadingState: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    loadingLabel: {
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    backButton: {
+      position: "absolute",
+      left: 20,
+    },
+    sheet: {
+      flex: 1,
+      marginTop: -30,
+      backgroundColor: colors.white,
+      borderTopLeftRadius: radius.md,
+      borderTopRightRadius: radius.md,
+    },
+    sheetContent: {
+      padding: 18,
+      gap: 12,
+      paddingBottom: 32,
+    },
+    name: {
+      fontSize: 25,
+      color: colors.textPrimary,
+    },
+    manufacturerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    stockRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    messageButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      height: 34,
+      paddingHorizontal: 10,
+      borderWidth: 1.5,
+      borderColor: colors.navy,
+      borderRadius: radius.sm,
+      backgroundColor: colors.white,
+    },
+    messageButtonPressed: {
+      opacity: 0.75,
+    },
+    messageLabel: {
+      fontSize: 14,
+    },
+    manufacturer: {
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+    sectionLabel: {
+      marginTop: 16,
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+    tiers: {
+      gap: 8,
+    },
+    tierRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      height: 46,
+      paddingHorizontal: 12,
+      backgroundColor: colors.accentTint,
+      borderRadius: radius.sm,
+      borderWidth: 1.5,
+      borderColor: colors.gold + "33",
+    },
+    tierRowSelected: {
+      backgroundColor: colors.navy,
+      borderColor: colors.navy,
+    },
+    tierRowPressed: {
+      opacity: 0.85,
+    },
+    tierHint: {
+      fontSize: 14,
+    },
+    tierRange: {
+      fontSize: 15,
+    },
+    tierPrice: {
+      fontSize: 16,
+    },
+    moqLine: {
+      marginTop: 8,
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    footerRow: {
+      marginTop: 12,
+      flexDirection: "row",
+      gap: 12,
+    },
+    stepper: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: 120,
+      height: 52,
+      paddingHorizontal: 16,
+      backgroundColor: colors.white,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+    },
+    stepperValue: {
+      fontSize: 18,
+      color: colors.textPrimary,
+    },
+    addButton: {
+      flex: 1,
+      height: 52,
+      borderRadius: radius.sm,
+      backgroundColor: colors.navy,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    },
+    addLabel: {
+      fontSize: 17,
+    },
   });
 }

@@ -24,6 +24,7 @@ export function ImageCarousel({ imageUrl, count = 3, height = 310 }: ImageCarous
     return (
       <View style={[styles.container, { height }]}>
         <Image source={{ uri: imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0, 0, 0, 0.35)" }]} />
       </View>
     );
   }

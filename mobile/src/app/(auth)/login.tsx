@@ -112,7 +112,7 @@ function createStyles(colors: ThemeColors) {
       marginTop: -8,
     },
     forgotText: {
-      fontSize: 12,
+      fontSize: 14,
     },
     footer: {
       flexDirection: "row",
@@ -120,7 +120,7 @@ function createStyles(colors: ThemeColors) {
       marginTop: 8,
     },
     footerText: {
-      fontSize: 13,
+      fontSize: 15,
     },
   });
 }

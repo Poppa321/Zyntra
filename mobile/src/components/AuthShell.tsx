@@ -8,45 +8,59 @@ import { CaretLeft } from "phosphor-react-native";
 
 import { Logo } from "@/components/Logo";
 import { Text } from "@/components/Text";
-import { colors } from "@/theme/colors";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 type AuthShellProps = {
   title: string;
+  /** The word within `title` to render in gold — the two-tone header accent. Falls back to the last word when omitted. */
+  accentWord?: string;
   subtitle: string;
   children: ReactNode;
   showBack?: boolean;
 };
 
-export function AuthShell({ title, subtitle, children, showBack }: AuthShellProps) {
+export function AuthShell({ title, accentWord, subtitle, children, showBack }: AuthShellProps) {
   const insets = useSafeAreaInsets();
-  // The hero stays a fixed brand-navy backdrop regardless of theme — it's the
-  // pre-login brand moment (like welcome.tsx), not a working screen, so it's
-  // deliberately theme-invariant and keeps using the static light palette
-  // for its literal navy/white values. Only the scrollable card surface
-  // below it follows the active theme, so form content stays legible.
   const themeColors = useThemeColors();
   const styles = useMemo(() => createStyles(themeColors), [themeColors]);
 
+  const words = title.split(" ");
+  const accent = accentWord ?? words[words.length - 1];
+
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
-      <View style={[styles.hero, { paddingTop: insets.top + 24 }]}>
+      <StatusBar style="dark" />
+      <View style={styles.accentShape} />
+      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         {showBack && (
           <Pressable
             onPress={() => router.back()}
-            style={[styles.backButton, { top: insets.top + 8 }]}
+            style={({ pressed }) => [
+              styles.backButton,
+              { top: insets.top + 16 },
+              pressed && { transform: [{ scale: 0.92 }], opacity: 0.8 },
+            ]}
             hitSlop={12}
           >
-            <CaretLeft size={22} color={colors.white} weight="bold" />
+            <CaretLeft size={22} color={themeColors.textPrimary} weight="bold" />
           </Pressable>
         )}
         <Logo variant="dark" size="md" style={styles.logo} />
         <Text weight="extraBold" style={styles.title}>
-          {title}
+          {words.map((word, i) => (
+            <Text
+              key={`${word}-${i}`}
+              weight="extraBold"
+              color={word === accent ? themeColors.gold : themeColors.navy}
+              style={styles.title}
+            >
+              {word}
+              {i < words.length - 1 ? " " : ""}
+            </Text>
+          ))}
         </Text>
-        <Text weight="regular" style={styles.subtitle}>
+        <Text weight="medium" style={styles.subtitle}>
           {subtitle}
         </Text>
       </View>
@@ -71,38 +85,50 @@ function createStyles(themeColors: ThemeColors) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.navyDark,
+      backgroundColor: themeColors.white,
     },
-    hero: {
-      paddingBottom: 28,
+    // A quiet gold wash tucked behind the header — gives the white auth
+    // screen a premium accent without ever competing with the two-tone title.
+    accentShape: {
+      position: "absolute",
+      top: -140,
+      right: -90,
+      width: 280,
+      height: 280,
+      borderRadius: 140,
+      backgroundColor: themeColors.accentTint,
+    },
+    header: {
+      paddingBottom: 20,
       alignItems: "center",
-      paddingHorizontal: 18,
+      paddingHorizontal: 24,
     },
     backButton: {
       position: "absolute",
-      left: 24,
+      left: 20,
     },
     logo: {
-      marginBottom: 20,
+      marginBottom: 18,
     },
     title: {
-      fontSize: 23,
-      color: colors.white,
+      fontSize: 29,
+      lineHeight: 34,
+      textAlign: "center",
     },
     subtitle: {
       marginTop: 8,
-      fontSize: 13,
-      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 21,
+      color: themeColors.textSecondary,
+      textAlign: "center",
     },
     card: {
       flex: 1,
-      backgroundColor: themeColors.white,
-      borderTopLeftRadius: radius.md,
-      borderTopRightRadius: radius.md,
     },
     cardContent: {
-      padding: 18,
-      gap: 14,
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      gap: 18,
     },
   });
 }

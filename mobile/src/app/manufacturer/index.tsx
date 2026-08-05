@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Image } from "expo-image";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -10,17 +11,20 @@ import {
   Package,
   PlusCircle,
   TrendUp,
+  UsersThree,
   Warning,
 } from "phosphor-react-native";
 
 import { IconButton } from "@/components/IconButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { useDashboardQuery } from "@/hooks/useInventory";
+import { useDashboardQuery, useManufacturerPoolsQuery } from "@/hooks/useInventory";
 import { useNotificationsQuery } from "@/hooks/useNotifications";
 
 import { radius } from "@/theme/spacing";
 import { type ThemeColors, useTheme } from "@/theme/ThemeContext";
+
+const dashboardHero = require("@/../assets/images/auth/welcome-bg.jpg");
 
 export default function ManufacturerDashboard() {
   const { colors, isDark } = useTheme();
@@ -33,6 +37,7 @@ export default function ManufacturerDashboard() {
     ? { bg: "#3a2c10", icon: "#f0b429", title: "#f0b429", subtitle: "#d1a34f" }
     : { bg: "#fff2db", icon: "#ad730f", title: "#ad730f", subtitle: "#997326" };
   const { data } = useDashboardQuery();
+  const { data: activePools } = useManufacturerPoolsQuery();
   const { data: notifications } = useNotificationsQuery();
   const hasUnread = notifications.some((item) => !item.read);
   // The hero is always dark navy, in both themes — colors.textMuted flips to a
@@ -44,31 +49,103 @@ export default function ManufacturerDashboard() {
   // the revenue lever (worth leading with, hence the emphasized pill), low
   // stock is the next most urgent, product count is purely informational.
   const ledgerStats = [
-    { value: String(data.inquiryCount), label: "Inquiries", onPress: () => router.push("/manufacturer/messages") },
-    { value: String(data.lowStockCount), label: "Low stock", onPress: () => router.push("/manufacturer/inventory") },
-    { value: String(data.productCount), label: "Products", onPress: () => router.push("/manufacturer/inventory") },
+    {
+      value: String(data.inquiryCount),
+      label: "Inquiries",
+      onPress: () => router.push("/manufacturer/messages"),
+    },
+    {
+      value: String(data.lowStockCount),
+      label: "Low stock",
+      onPress: () => router.push("/manufacturer/inventory"),
+    },
+    {
+      value: String(data.productCount),
+      label: "Products",
+      onPress: () => router.push("/manufacturer/inventory"),
+    },
   ];
 
   const quickActions = [
-    { label: "Add product", icon: PlusCircle, onPress: () => router.push("/list-product") },
-    { label: "Inventory", icon: Package, onPress: () => router.push("/manufacturer/inventory") },
-    { label: "Orders", icon: ClipboardText, onPress: () => router.push("/manufacturer/orders") },
-    { label: "Messages", icon: ChatCircleText, onPress: () => router.push("/manufacturer/messages") },
+    {
+      label: "Add product",
+      icon: PlusCircle,
+      onPress: () => router.push("/list-product"),
+    },
+    {
+      label: "Inventory",
+      icon: Package,
+      onPress: () => router.push("/manufacturer/inventory"),
+    },
+    {
+      label: "Orders",
+      icon: ClipboardText,
+      onPress: () => router.push("/manufacturer/orders"),
+    },
+    {
+      label: "Messages",
+      icon: ChatCircleText,
+      onPress: () => router.push("/manufacturer/messages"),
+    },
+  ];
+
+  const insightCards = [
+    {
+      value: String(data.inquiryCount),
+      label: "New inquiries",
+      icon: ChatCircleText,
+      onPress: () => router.push("/manufacturer/messages"),
+    },
+    {
+      value: String(data.lowStockCount),
+      label: "Low stock",
+      icon: Warning,
+      onPress: () => router.push("/manufacturer/inventory"),
+    },
+    {
+      value: String(data.productCount),
+      label: "Active products",
+      icon: Package,
+      onPress: () => router.push("/manufacturer/inventory"),
+    },
   ];
 
   return (
     <ScreenContainer edges={["top"]} topPadding={0}>
       <StatusBar style={isDark ? "light" : "dark"} />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
+          <Image
+            source={dashboardHero}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={150}
+          />
+          <View style={styles.heroOverlay} />
           <View style={styles.heroTopRow}>
-            <Text weight="semiBold" color={heroMutedText} style={styles.eyebrow}>
-              ZYNTRA · MANUFACTURER
-            </Text>
+            <View>
+              <Text
+                weight="semiBold"
+                color={heroMutedText}
+                style={styles.eyebrow}
+              >
+                ZYNTRA · MANUFACTURER
+              </Text>
+              <Text
+                weight="bold"
+                color={colors.pureWhite}
+                style={styles.heroHeadline}
+              >
+                Your supply chain, simplified.
+              </Text>
+            </View>
             <View>
               <IconButton
                 icon={<Bell size={17} color={colors.pureWhite} weight="fill" />}
-                background="rgba(255,255,255,0.1)"
+                background="rgba(255,255,255,0.12)"
                 size={34}
                 onPress={() => router.push("/notifications")}
               />
@@ -76,43 +153,71 @@ export default function ManufacturerDashboard() {
             </View>
           </View>
 
-          <Text weight="regular" color={heroMutedText} style={styles.balanceLabel}>
-            Revenue — last 30 days, after platform fee
-          </Text>
-          <View style={styles.balanceRow}>
-            <Text weight="extraBold" style={styles.balanceValue} numberOfLines={1}>
-              {data.revenue}
+          <View style={styles.balanceCard}>
+            <Text
+              weight="medium"
+              color={heroMutedText}
+              style={styles.balanceLabel}
+            >
+              Revenue — last 30 days, after platform fee
             </Text>
-            <View style={styles.trendPill}>
-              <TrendUp size={12} color={colors.navy} weight="bold" />
-              <Text weight="bold" color={colors.navy} style={styles.trendLabel}>
-                Live
+            <View style={styles.balanceRow}>
+              <Text
+                weight="extraBold"
+                style={styles.balanceValue}
+                numberOfLines={1}
+              >
+                {data.revenue}
               </Text>
+              <View style={styles.trendPill}>
+                <TrendUp size={12} color={colors.navy} weight="bold" />
+                <Text
+                  weight="bold"
+                  color={colors.navy}
+                  style={styles.trendLabel}
+                >
+                  Live
+                </Text>
+              </View>
             </View>
+            <Text
+              weight="medium"
+              color={heroMutedText}
+              style={styles.businessName}
+            >
+              {data.businessName}
+            </Text>
           </View>
-          <Text weight="medium" color={heroMutedText} style={styles.businessName}>
-            {data.businessName}
-          </Text>
+        </View>
 
-          <View style={styles.heroStatsRow}>
-            <View style={styles.heroStat}>
-              <Text weight="extraBold" style={styles.heroStatValue}>
-                {data.ordersFulfilled}
-              </Text>
-              <Text weight="regular" color={heroMutedText} style={styles.heroStatLabel}>
-                orders fulfilled
-              </Text>
-            </View>
-            <View style={styles.heroStatDivider} />
-            <View style={styles.heroStat}>
-              <Text weight="extraBold" style={styles.heroStatValue}>
-                {data.productCount}
-              </Text>
-              <Text weight="regular" color={heroMutedText} style={styles.heroStatLabel}>
-                active products
-              </Text>
-            </View>
-          </View>
+        <View style={styles.insightRow}>
+          {insightCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <Pressable
+                key={card.label}
+                onPress={card.onPress}
+                style={({ pressed }) => [
+                  styles.insightCard,
+                  pressed && styles.insightCardPressed,
+                ]}
+              >
+                <View style={styles.insightIcon}>
+                  <Icon size={16} color={colors.gold} weight="bold" />
+                </View>
+                <Text weight="extraBold" style={styles.insightValue}>
+                  {card.value}
+                </Text>
+                <Text
+                  weight="medium"
+                  color={colors.textMuted}
+                  style={styles.insightLabel}
+                >
+                  {card.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.quickActionsRow}>
@@ -120,12 +225,19 @@ export default function ManufacturerDashboard() {
             <Pressable
               key={action.label}
               onPress={action.onPress}
-              style={({ pressed }) => [styles.quickAction, pressed && styles.quickActionPressed]}
+              style={({ pressed }) => [
+                styles.quickAction,
+                pressed && styles.quickActionPressed,
+              ]}
             >
               <View style={styles.quickActionIcon}>
                 <action.icon size={19} color={colors.gold} weight="bold" />
               </View>
-              <Text weight="semiBold" style={styles.quickActionLabel} numberOfLines={1}>
+              <Text
+                weight="semiBold"
+                style={styles.quickActionLabel}
+                numberOfLines={1}
+              >
                 {action.label}
               </Text>
             </Pressable>
@@ -135,13 +247,24 @@ export default function ManufacturerDashboard() {
         <View style={styles.ledgerStrip}>
           <Pressable
             onPress={ledgerStats[0].onPress}
-            style={({ pressed }) => [styles.ledgerLead, pressed && styles.ledgerPressed]}
+            style={({ pressed }) => [
+              styles.ledgerLead,
+              pressed && styles.ledgerPressed,
+            ]}
           >
             <View>
-              <Text weight="extraBold" color={colors.pureWhite} style={styles.ledgerLeadValue}>
+              <Text
+                weight="extraBold"
+                color={colors.pureWhite}
+                style={styles.ledgerLeadValue}
+              >
                 {ledgerStats[0].value}
               </Text>
-              <Text weight="medium" color="rgba(255,255,255,0.68)" style={styles.ledgerLeadLabel}>
+              <Text
+                weight="medium"
+                color="rgba(255,255,255,0.68)"
+                style={styles.ledgerLeadLabel}
+              >
                 {ledgerStats[0].label}
               </Text>
             </View>
@@ -152,13 +275,21 @@ export default function ManufacturerDashboard() {
             <Pressable
               key={stat.label}
               onPress={stat.onPress}
-              style={({ pressed }) => [styles.ledgerChip, pressed && styles.ledgerPressed]}
+              style={({ pressed }) => [
+                styles.ledgerChip,
+                pressed && styles.ledgerPressed,
+              ]}
             >
               <Text weight="extraBold" style={styles.ledgerChipValue}>
                 {stat.value}
               </Text>
               <View style={styles.ledgerChipFooter}>
-                <Text weight="medium" color={colors.textMuted} style={styles.ledgerChipLabel} numberOfLines={1}>
+                <Text
+                  weight="medium"
+                  color={colors.textMuted}
+                  style={styles.ledgerChipLabel}
+                  numberOfLines={1}
+                >
                   {stat.label}
                 </Text>
                 <CaretRight size={11} color={colors.textFaint} weight="bold" />
@@ -178,23 +309,68 @@ export default function ManufacturerDashboard() {
           >
             <View style={styles.warningTitleRow}>
               <Warning size={16} color={warningColors.icon} weight="fill" />
-              <Text weight="bold" color={warningColors.title} style={styles.warningTitle}>
+              <Text
+                weight="bold"
+                color={warningColors.title}
+                style={styles.warningTitle}
+              >
                 {data.lowStockCount} products low on stock
               </Text>
               <View style={styles.warningSpacer} />
               <CaretRight size={14} color={warningColors.icon} weight="bold" />
             </View>
-            <Text weight="regular" color={warningColors.subtitle} style={styles.warningSubtitle}>
+            <Text
+              weight="regular"
+              color={warningColors.subtitle}
+              style={styles.warningSubtitle}
+            >
               {data.lowStockProductNames.join(" · ")}
             </Text>
           </Pressable>
+        )}
+
+        {activePools.length > 0 && (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text weight="bold" style={styles.sectionTitle}>
+                Group buy pools
+              </Text>
+            </View>
+            <View style={styles.ordersList}>
+              {activePools.map((pool) => (
+                <Pressable
+                  key={pool.poolId}
+                  style={styles.orderRow}
+                  onPress={() => router.push(`/product/${pool.productId}`)}
+                >
+                  <View style={styles.orderIcon}>
+                    <UsersThree size={16} color={colors.gold} weight="fill" />
+                  </View>
+                  <View style={styles.orderInfo}>
+                    <Text weight="semiBold" style={styles.orderId} numberOfLines={1}>
+                      {pool.productName}
+                    </Text>
+                    <Text weight="regular" color={colors.textMuted} style={styles.orderTag}>
+                      {pool.contributorCount} distributor{pool.contributorCount === 1 ? "" : "s"} pooling
+                    </Text>
+                  </View>
+                  <Text weight="extraBold" style={styles.orderTotal}>
+                    {pool.pooledQty.toLocaleString()}/{pool.targetQty.toLocaleString()} {pool.unit}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
         )}
 
         <View style={styles.sectionHeaderRow}>
           <Text weight="bold" style={styles.sectionTitle}>
             Recent activity
           </Text>
-          <Pressable hitSlop={8} onPress={() => router.push("/manufacturer/orders")}>
+          <Pressable
+            hitSlop={8}
+            onPress={() => router.push("/manufacturer/orders")}
+          >
             <Text weight="semiBold" color={colors.gold} style={styles.seeAll}>
               See all
             </Text>
@@ -203,7 +379,12 @@ export default function ManufacturerDashboard() {
         <View style={styles.ordersList}>
           {data.recentOrders.map((order) => (
             <View key={order.id} style={styles.orderRow}>
-              <View style={[styles.orderIcon, order.tag === "NEW" && styles.orderIconNew]}>
+              <View
+                style={[
+                  styles.orderIcon,
+                  order.tag === "NEW" && styles.orderIconNew,
+                ]}
+              >
                 <ClipboardText
                   size={16}
                   color={order.tag === "NEW" ? colors.navy : colors.gold}
@@ -211,10 +392,18 @@ export default function ManufacturerDashboard() {
                 />
               </View>
               <View style={styles.orderInfo}>
-                <Text weight="semiBold" style={styles.orderId} numberOfLines={1}>
+                <Text
+                  weight="semiBold"
+                  style={styles.orderId}
+                  numberOfLines={1}
+                >
                   {order.id}
                 </Text>
-                <Text weight="regular" color={colors.textMuted} style={styles.orderTag}>
+                <Text
+                  weight="regular"
+                  color={colors.textMuted}
+                  style={styles.orderTag}
+                >
                   {order.tag === "NEW" ? "Awaiting acceptance" : "Shipped"}
                 </Text>
               </View>
@@ -235,21 +424,34 @@ function createStyles(colors: ThemeColors) {
       paddingBottom: 32,
     },
     hero: {
+      position: "relative",
       backgroundColor: colors.navyDark,
       paddingHorizontal: 18,
-      paddingTop: 12,
-      paddingBottom: 22,
+      paddingTop: 24,
+      paddingBottom: 26,
       borderBottomLeftRadius: radius.md,
       borderBottomRightRadius: radius.md,
+      overflow: "hidden",
+    },
+    heroOverlay: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: "rgba(10, 24, 41, 0.58)",
     },
     heroTopRow: {
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "center",
+      alignItems: "flex-start",
+      gap: 16,
     },
     eyebrow: {
       fontSize: 11,
       letterSpacing: 0.4,
+      marginBottom: 6,
+    },
+    heroHeadline: {
+      fontSize: 23,
+      lineHeight: 30,
+      maxWidth: 220,
     },
     bellDot: {
       position: "absolute",
@@ -266,8 +468,16 @@ function createStyles(colors: ThemeColors) {
       marginTop: 20,
       fontSize: 12,
     },
+    balanceCard: {
+      marginTop: 20,
+      backgroundColor: "rgba(255,255,255,0.08)",
+      borderRadius: radius.card,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.12)",
+    },
     balanceRow: {
-      marginTop: 4,
+      marginTop: 8,
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
@@ -279,11 +489,11 @@ function createStyles(colors: ThemeColors) {
     trendPill: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 3,
+      gap: 4,
       backgroundColor: colors.gold,
       borderRadius: radius.pill,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
     },
     trendLabel: {
       fontSize: 10,
@@ -318,7 +528,46 @@ function createStyles(colors: ThemeColors) {
       flexDirection: "row",
       gap: 8,
       paddingHorizontal: 16,
-      marginTop: -20,
+      marginTop: 18,
+    },
+    insightRow: {
+      flexDirection: "row",
+      gap: 10,
+      paddingHorizontal: 16,
+      marginTop: 16,
+    },
+    insightCard: {
+      flex: 1,
+      borderRadius: radius.card,
+      backgroundColor: colors.white,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.05,
+      shadowRadius: 16,
+      elevation: 3,
+    },
+    insightCardPressed: {
+      opacity: 0.85,
+    },
+    insightIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      backgroundColor: colors.accentTint,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 12,
+    },
+    insightValue: {
+      fontSize: 18,
+      color: colors.textPrimary,
+    },
+    insightLabel: {
+      marginTop: 6,
+      fontSize: 11,
     },
     quickAction: {
       flex: 1,

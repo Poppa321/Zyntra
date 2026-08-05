@@ -10,3 +10,7 @@ export function initializePayment(orderId: string) {
 export function verifyPayment(reference: string) {
   return apiClient.get<PaymentDto>(`/payments/verify/${reference}`).then((res) => res.data);
 }
+
+export function releaseEscrow(orderId: string) {
+  return apiClient.post<PaymentDto>(`/payments/${orderId}/release`).then((res) => res.data);
+}

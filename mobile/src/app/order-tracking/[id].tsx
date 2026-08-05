@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { CaretLeft, ChatCircleText, Check, XCircle } from "phosphor-react-native";
+import { CaretLeft, ChatCircleText, Check, LockKey, ShieldCheck, XCircle } from "phosphor-react-native";
 
 import { getApiErrorMessage } from "@/api/client";
 import { confirmAlert, showAlert } from "@/lib/alert";
@@ -15,7 +15,7 @@ import { Text } from "@/components/Text";
 import { useSessionQuery } from "@/hooks/useAuth";
 import { useStartConversationMutation } from "@/hooks/useChat";
 import { useCancelOrderMutation, useOrderQuery } from "@/hooks/useOrders";
-import { usePayForOrderMutation } from "@/hooks/usePayments";
+import { usePayForOrderMutation, useReleaseEscrowMutation } from "@/hooks/usePayments";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
@@ -35,6 +35,7 @@ export default function OrderTracking() {
   const { data, refetch } = useOrderQuery(id);
   const { data: user } = useSessionQuery();
   const payForOrder = usePayForOrderMutation();
+  const releaseEscrow = useReleaseEscrowMutation();
   const cancelOrder = useCancelOrderMutation();
   const startConversation = useStartConversationMutation();
   const { isDark } = useTheme();
@@ -78,6 +79,8 @@ export default function OrderTracking() {
       }));
 
   const canPay = order?.status === "PENDING" && order.paymentStatus !== "SUCCESS";
+  const isEscrowHeld = !!order && order.paymentStatus === "SUCCESS" && !order.escrowReleased;
+  const canReleaseEscrow = isEscrowHeld && isDistributor && order.status === "DELIVERED";
 
   function handlePay() {
     if (!order) return;
@@ -85,6 +88,20 @@ export default function OrderTracking() {
       onSuccess: () => refetch(),
       onError: (error) => showAlert("Payment failed", getApiErrorMessage(error)),
     });
+  }
+
+  function handleReleaseEscrow() {
+    if (!order) return;
+    confirmAlert(
+      "Confirm receipt",
+      "Releasing payment confirms you received this order in full. This can't be undone.",
+      "Release payment",
+      () =>
+        releaseEscrow.mutate(order.id, {
+          onSuccess: () => refetch(),
+          onError: (error) => showAlert("Couldn't release payment", getApiErrorMessage(error)),
+        }),
+    );
   }
 
   return (
@@ -132,7 +149,10 @@ export default function OrderTracking() {
 
         {!isTerminatedEarly && order && (
           <LeafletMap
-            originAddress={`${order.manufacturerBusinessName ?? "Manufacturer"}, Ghana`}
+            // The manufacturer's city geocodes to a real point; their business
+            // name almost never does and used to silently fall back to the
+            // same fixed coordinates for every single order.
+            originAddress={order.manufacturerCity ? `${order.manufacturerCity}, Ghana` : "Kumasi, Ghana"}
             destinationAddress={order.deliveryAddress ?? `${order.distributorBusinessName ?? "Distributor"}, Ghana`}
           />
         )}
@@ -199,6 +219,42 @@ export default function OrderTracking() {
                 </View>
               </>
             )}
+          </View>
+        )}
+
+        {isEscrowHeld && (
+          <View style={styles.escrowCard}>
+            <View style={styles.escrowRow}>
+              {order.escrowReleased ? (
+                <ShieldCheck size={18} color={colors.success} weight="fill" />
+              ) : (
+                <LockKey size={18} color={colors.gold} weight="fill" />
+              )}
+              <Text weight="semiBold" style={styles.escrowText}>
+                {canReleaseEscrow
+                  ? "Payment is held in escrow — release it once you've received your order."
+                  : "Payment is held in escrow until the order is delivered and confirmed."}
+              </Text>
+            </View>
+            {canReleaseEscrow && (
+              <Button
+                label={releaseEscrow.isPending ? "Releasing…" : "Confirm receipt & release payment"}
+                onPress={handleReleaseEscrow}
+                loading={releaseEscrow.isPending}
+                variant="outline"
+                style={styles.escrowButton}
+              />
+            )}
+          </View>
+        )}
+        {!!order && order.escrowReleased && (
+          <View style={styles.escrowCard}>
+            <View style={styles.escrowRow}>
+              <ShieldCheck size={18} color={colors.success} weight="fill" />
+              <Text weight="semiBold" style={styles.escrowText}>
+                Payment released to {isDistributor ? "the manufacturer" : "you"}.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -332,6 +388,7 @@ function createStyles(colors: ThemeColors) {
   itemsCard: {
     marginTop: 18,
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
     gap: 10,
   },
@@ -361,6 +418,29 @@ function createStyles(colors: ThemeColors) {
   },
   payButton: {
     marginTop: 12,
+  },
+  escrowCard: {
+    marginTop: 12,
+    borderRadius: radius.card,
+    borderWidth: 1.5,
+    borderColor: colors.gold + "40",
+    backgroundColor: colors.accentTint,
+    padding: 14,
+    gap: 12,
+  },
+  escrowRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  escrowText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textPrimary,
+  },
+  escrowButton: {
+    marginTop: 0,
   },
   actionsRow: {
     marginTop: 12,
@@ -394,6 +474,7 @@ function createStyles(colors: ThemeColors) {
     alignItems: "flex-start",
     justifyContent: "space-between",
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 16,
   },
   etaLabel: {
@@ -410,6 +491,7 @@ function createStyles(colors: ThemeColors) {
   historyCard: {
     marginTop: 12,
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
     gap: 10,
   },

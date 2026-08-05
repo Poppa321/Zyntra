@@ -22,7 +22,7 @@ export function Chip({ label, active, onPress }: ChipProps) {
       style={({ pressed }) => [
         styles.base,
         active ? styles.active : styles.inactive,
-        pressed && styles.pressed,
+        pressed && { transform: [{ scale: 0.95 }], opacity: 0.8 },
       ]}
     >
       <Text weight="medium" color={active ? colors.pureWhite : colors.textPrimary} style={styles.label}>
@@ -54,7 +54,7 @@ function createStyles(colors: ThemeColors) {
       opacity: 0.7,
     },
     label: {
-      fontSize: 12,
+      fontSize: 13,
     },
   });
 }

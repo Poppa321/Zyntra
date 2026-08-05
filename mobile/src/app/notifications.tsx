@@ -144,6 +144,7 @@ function createStyles(colors: ThemeColors) {
   card: {
     flexDirection: "row",
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
     gap: 12,
   },

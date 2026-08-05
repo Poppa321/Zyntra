@@ -10,7 +10,11 @@ import { verifyBoost } from "@/api/endpoints/products";
 import { Button } from "@/components/Button";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
+import {
+  type ThemeColors,
+  useTheme,
+  useThemeColors,
+} from "@/theme/ThemeContext";
 
 // Fallback landing screen for the zyntra://payment/callback deep link, shared
 // by both order payments and product-boost payments (Paystack only accepts
@@ -23,52 +27,63 @@ import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext
 // appends ?reference= (or ?trxref=) to whatever callback_url it's given, and
 // the reference prefix ("ZYNPAY-" vs "ZYNBOOST-") tells us which flow to verify.
 export default function PaymentCallback() {
-  const { reference, trxref } = useLocalSearchParams<{ reference?: string; trxref?: string }>();
-  const [state, setState] = useState<"verifying" | "success" | "error">("verifying");
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [isBoost, setIsBoost] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { reference, trxref } = useLocalSearchParams<{
+    reference?: string;
+    trxref?: string;
+  }>();
   const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const paymentReference = reference ?? trxref;
+  const [state, setState] = useState<"verifying" | "success" | "error">(
+    paymentReference ? "verifying" : "error",
+  );
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [isBoost, setIsBoost] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(
+    paymentReference ? "" : "No payment reference was provided.",
+  );
 
   useEffect(() => {
-    if (!paymentReference) {
-      setState("error");
-      setErrorMessage("No payment reference was provided.");
-      return;
-    }
+    async function verify() {
+      if (!paymentReference) {
+        return;
+      }
 
-    if (paymentReference.startsWith("ZYNBOOST-")) {
-      setIsBoost(true);
-      verifyBoost(paymentReference)
-        .then((boost) => {
+      if (paymentReference.startsWith("ZYNBOOST-")) {
+        setIsBoost(true);
+        try {
+          const boost = await verifyBoost(paymentReference);
           setState(boost.status === "SUCCESS" ? "success" : "error");
           if (boost.status !== "SUCCESS") {
             setErrorMessage("This payment was not successful.");
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           setState("error");
-          setErrorMessage(getApiErrorMessage(error, "Couldn't verify this payment."));
-        });
-      return;
-    }
+          setErrorMessage(
+            getApiErrorMessage(error, "Couldn't verify this payment."),
+          );
+        }
+        return;
+      }
 
-    verifyPayment(paymentReference)
-      .then((payment) => {
+      try {
+        const payment = await verifyPayment(paymentReference);
         setOrderId(payment.orderId);
         setState(payment.status === "SUCCESS" ? "success" : "error");
         if (payment.status !== "SUCCESS") {
           setErrorMessage("This payment was not successful.");
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         setState("error");
-        setErrorMessage(getApiErrorMessage(error, "Couldn't verify this payment."));
-      });
+        setErrorMessage(
+          getApiErrorMessage(error, "Couldn't verify this payment."),
+        );
+      }
+    }
+
+    verify();
   }, [paymentReference]);
 
   function handleContinue() {
@@ -95,7 +110,11 @@ export default function PaymentCallback() {
             <Text weight="extraBold" style={styles.title}>
               {isBoost ? "Product featured" : "Payment confirmed"}
             </Text>
-            <Button label={isBoost ? "Back to inventory" : "View order"} onPress={handleContinue} style={styles.button} />
+            <Button
+              label={isBoost ? "Back to inventory" : "View order"}
+              onPress={handleContinue}
+              style={styles.button}
+            />
           </>
         )}
         {state === "error" && (
@@ -107,7 +126,11 @@ export default function PaymentCallback() {
             <Text weight="regular" color={colors.textMuted} style={styles.body}>
               {errorMessage}
             </Text>
-            <Button label="Continue" onPress={handleContinue} style={styles.button} />
+            <Button
+              label="Continue"
+              onPress={handleContinue}
+              style={styles.button}
+            />
           </>
         )}
       </View>
@@ -117,25 +140,25 @@ export default function PaymentCallback() {
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 12,
-  },
-  title: {
-    fontSize: 17,
-    color: colors.textPrimary,
-    textAlign: "center",
-  },
-  body: {
-    fontSize: 13,
-    textAlign: "center",
-  },
-  button: {
-    marginTop: 12,
-    minWidth: 180,
-  },
+    content: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 32,
+      gap: 12,
+    },
+    title: {
+      fontSize: 17,
+      color: colors.textPrimary,
+      textAlign: "center",
+    },
+    body: {
+      fontSize: 13,
+      textAlign: "center",
+    },
+    button: {
+      marginTop: 12,
+      minWidth: 180,
+    },
   });
 }

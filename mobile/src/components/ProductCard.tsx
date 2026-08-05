@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Star } from "phosphor-react-native";
+import { SealCheck, Star } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 
@@ -19,7 +19,13 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <Pressable onPress={onPress} style={styles.card}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 },
+      ]}
+    >
       <View style={styles.thumbWrap}>
         <ProductThumb uri={product.imageUrl} />
         {product.featured && (
@@ -39,9 +45,14 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
       <Text weight="semiBold" style={styles.name} numberOfLines={1}>
         {product.name}
       </Text>
-      <Text weight="regular" color={colors.textMuted} style={styles.manufacturer} numberOfLines={1}>
-        {product.manufacturer}
-      </Text>
+      <View style={styles.manufacturerRow}>
+        <Text weight="regular" color={colors.textMuted} style={styles.manufacturer} numberOfLines={1}>
+          {product.manufacturer}
+        </Text>
+        {product.manufacturerVerified && (
+          <SealCheck size={13} color={colors.gold} weight="fill" />
+        )}
+      </View>
       <Text weight="extraBold" color={colors.gold} style={styles.price}>
         {product.price}
       </Text>
@@ -57,7 +68,16 @@ function createStyles(colors: ThemeColors) {
     card: {
       flex: 1,
       borderRadius: radius.card,
-      padding: 8,
+      padding: 12,
+      backgroundColor: colors.cardBg,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 16,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: colors.border,
+      margin: 4,
     },
     thumbWrap: {
       height: 100,
@@ -92,19 +112,25 @@ function createStyles(colors: ThemeColors) {
     },
     name: {
       marginTop: 8,
-      fontSize: 13,
+      fontSize: 14,
+    },
+    manufacturerRow: {
+      marginTop: 5,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
     },
     manufacturer: {
-      marginTop: 5,
-      fontSize: 11,
+      flexShrink: 1,
+      fontSize: 12,
     },
     price: {
       marginTop: 6,
-      fontSize: 14,
+      fontSize: 15,
     },
     moq: {
       marginTop: 6,
-      fontSize: 10,
+      fontSize: 11,
     },
   });
 }

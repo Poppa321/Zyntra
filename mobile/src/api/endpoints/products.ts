@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client";
-import type { BoostProductResponse, BoostStatusDto, LowStockProductDto, PageResponse, ProductCardDto, ProductCreateRequest, ProductDetailDto, StockUpdateRequest } from "@/api/types";
+import type { BoostProductResponse, BoostStatusDto, JoinPoolPayload, LowStockProductDto, ManufacturerPoolDto, PageResponse, ProductCardDto, ProductCreateRequest, ProductDetailDto, ProductPoolDto, StockUpdateRequest } from "@/api/types";
 
 export type ListProductsParams = {
   category?: string;
@@ -48,8 +48,20 @@ export function uploadProductPhoto(id: string, photo: { uri: string; name: strin
     .then((res) => res.data);
 }
 
+export function getProductPool(productId: string) {
+  return apiClient.get<ProductPoolDto>(`/products/${productId}/pool`).then((res) => res.data);
+}
+
+export function joinProductPool(productId: string, payload: JoinPoolPayload) {
+  return apiClient.post<ProductPoolDto>(`/products/${productId}/pool/join`, payload).then((res) => res.data);
+}
+
 export function listLowStock() {
   return apiClient.get<LowStockProductDto[]>("/products/low-stock").then((res) => res.data);
+}
+
+export function listManufacturerPools() {
+  return apiClient.get<ManufacturerPoolDto[]>("/products/pools").then((res) => res.data);
 }
 
 export function initializeBoost(productId: string) {

@@ -80,25 +80,42 @@ function buildHtml(origin: LatLng, destination: LatLng, colors: ThemeColors) {
 </html>`;
 }
 
-export function LeafletMap({ originAddress, destinationAddress, height = 240 }: LeafletMapProps) {
+export function LeafletMap({
+  originAddress,
+  destinationAddress,
+  height = 240,
+}: LeafletMapProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [html, setHtml] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setHtml(null);
 
-    Promise.all([geocode(originAddress), geocode(destinationAddress)]).then(([origin, destination]) => {
+    Promise.resolve().then(() => setHtml(null));
+
+    async function loadMap() {
+      const [origin, destination] = await Promise.all([
+        geocode(originAddress),
+        geocode(destinationAddress),
+      ]);
+
       if (cancelled) return;
-      setHtml(buildHtml(origin ?? FALLBACK_ORIGIN, destination ?? FALLBACK_DESTINATION, colors));
-    });
+      setHtml(
+        buildHtml(
+          origin ?? FALLBACK_ORIGIN,
+          destination ?? FALLBACK_DESTINATION,
+          colors,
+        ),
+      );
+    }
+
+    loadMap();
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originAddress, destinationAddress]);
+  }, [originAddress, destinationAddress, colors]);
 
   return (
     <View style={[styles.container, { height }]}>

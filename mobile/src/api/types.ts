@@ -111,6 +111,23 @@ export type CreateReviewPayload = {
   comment?: string;
 };
 
+export type PoolStatusDto = "OPEN" | "FULFILLED" | "EXPIRED";
+
+export type ProductPoolDto = {
+  id: string | null;
+  productId: string;
+  targetQty: number;
+  pooledQty: number;
+  contributorCount: number;
+  yourQuantity: number;
+  status: PoolStatusDto;
+  expiresAt: string | null;
+};
+
+export type JoinPoolPayload = {
+  quantity: number;
+};
+
 export type BoostProductResponse = {
   authorizationUrl: string;
   reference: string;
@@ -183,6 +200,7 @@ export type OrderDto = {
   distributorBusinessName?: string;
   manufacturerId: string;
   manufacturerBusinessName?: string;
+  manufacturerCity?: string;
   status: OrderStatusDto;
   deliveryAddress?: string;
   itemsSummary?: string;
@@ -195,6 +213,7 @@ export type OrderDto = {
   createdAt: string;
   updatedAt: string;
   paymentStatus?: string;
+  escrowReleased: boolean;
 };
 
 export type OrderItemDto = {
@@ -243,7 +262,20 @@ export type ManufacturerDashboardDto = {
   orderCount: number;
   productCount: number;
   lowStockCount: number;
+  activePoolCount: number;
   recentOrders: RecentOrderDto[];
+};
+
+export type ManufacturerPoolDto = {
+  poolId: string;
+  productId: string;
+  productName: string;
+  unit: string;
+  targetQty: number;
+  pooledQty: number;
+  contributorCount: number;
+  status: PoolStatusDto;
+  expiresAt: string | null;
 };
 
 export type PaymentStatusDto = "INITIALIZED" | "SUCCESS" | "FAILED";
@@ -258,6 +290,8 @@ export type PaymentDto = {
   reference: string;
   status: PaymentStatusDto;
   paidAt?: string;
+  escrowReleased: boolean;
+  escrowReleasedAt?: string;
 };
 
 export type ConversationDto = {

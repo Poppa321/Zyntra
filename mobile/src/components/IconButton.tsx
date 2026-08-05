@@ -26,7 +26,7 @@ export function IconButton({
       style={({ pressed }) => [
         styles.base,
         { width: size, height: size, borderRadius: size / 2, backgroundColor: background ?? colors.cardBg },
-        pressed && styles.pressed,
+        pressed && { transform: [{ scale: 0.94 }], opacity: 0.8 },
         style,
       ]}
     >

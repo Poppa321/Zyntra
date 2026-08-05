@@ -22,6 +22,17 @@ export function usePayForOrderMutation() {
   });
 }
 
+/** Distributor confirms receipt of a delivered order, releasing the held payment to the manufacturer. */
+export function useReleaseEscrowMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => paymentsApi.releaseEscrow(orderId),
+    onSuccess: (_data, orderId) => {
+      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+    },
+  });
+}
+
 /** Monetization: manufacturer pays ₵50 (Paystack) to feature a product for 7 days. */
 export function useBoostProductMutation() {
   const queryClient = useQueryClient();

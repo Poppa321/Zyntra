@@ -44,7 +44,7 @@ export function Button({
         isOutline && styles.outline,
         !isAccent && !isOutline && styles.primary,
         (disabled || loading) && styles.disabled,
-        pressed && !disabled && !loading && styles.pressed,
+        pressed && !disabled && !loading && { transform: [{ scale: 0.97 }], opacity: 0.85 },
         style,
       ]}
     >
@@ -99,7 +99,7 @@ function createStyles(colors: ThemeColors) {
       gap: 8,
     },
     label: {
-      fontSize: 15,
+      fontSize: 16,
     },
   });
 }

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import NetInfo from "@react-native-community/netinfo";
 import { WifiSlash } from "phosphor-react-native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -17,6 +16,8 @@ import {
 
 import { queryClient } from "@/lib/queryClient";
 import { GoogleAuthProvider } from "@/lib/googleAuth";
+import { useIsOffline } from "@/hooks/useIsOffline";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 
@@ -56,27 +57,27 @@ export default function RootLayout() {
 // sensible fallback; screens with their own dark hero/header still render
 // their own <StatusBar> to override it.
 function RootLayoutNav() {
-  const { isDark, colors } = useTheme();
-  const [isOffline, setIsOffline] = useState(false);
+  const { isDark } = useTheme();
+  const isOffline = useIsOffline();
   const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsOffline(state.isConnected === false);
-    });
-    return () => unsubscribe();
-  }, []);
+  usePushRegistration();
 
   return (
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.container}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="list-product" options={{ presentation: "modal" }} />
+          <Stack.Screen
+            name="list-product"
+            options={{ presentation: "modal" }}
+          />
         </Stack>
 
         {isOffline && (
-          <View style={[styles.offlineBanner, { bottom: insets.bottom + 16 }]}>
+          // Anchored under the status bar rather than floating above the
+          // bottom tab bar — a bottom-anchored banner used to sit directly on
+          // top of the tab icons/labels, blocking navigation while offline.
+          <View style={[styles.offlineBanner, { top: insets.top + 12 }]} pointerEvents="none">
             <View style={styles.offlineRow}>
               <View style={styles.offlineBadge}>
                 <WifiSlash size={16} color="#d64545" weight="bold" />
@@ -142,4 +143,3 @@ const styles = StyleSheet.create({
     color: "#b2b8bd",
   },
 });
-

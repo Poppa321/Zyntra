@@ -187,6 +187,7 @@ function createStyles(colors: ThemeColors) {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 12,
     gap: 14,
   },
@@ -231,6 +232,7 @@ function createStyles(colors: ThemeColors) {
   summary: {
     marginTop: 18,
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 16,
   },
   summaryRow: {

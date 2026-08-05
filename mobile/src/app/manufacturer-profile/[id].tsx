@@ -263,6 +263,7 @@ function createStyles(colors: ThemeColors) {
   trustCard: {
     marginHorizontal: 18,
     borderRadius: radius.card,
+    backgroundColor: colors.cardBg,
     padding: 16,
     gap: 14,
   },

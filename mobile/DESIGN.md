@@ -46,17 +46,17 @@ typography:
     lineHeight: 22
   body:
     fontFamily: "NotoSans_400Regular"
-    fontSize: "13px"
+    fontSize: "14px"
     fontWeight: 400
-    lineHeight: 20
+    lineHeight: 21
   label:
     fontFamily: "NotoSans_600SemiBold"
-    fontSize: "12px"
+    fontSize: "13px"
     fontWeight: 600
-    lineHeight: 17
+    lineHeight: 18
 rounded:
-  sm: "10px"
-  md: "14px"
+  sm: "16px"
+  md: "22px"
   pill: "29px"
 spacing:
   xs: "4px"
@@ -116,8 +116,9 @@ The system explicitly rejects the generic SaaS-dashboard look: no flat gray pane
 - Navy-and-gold as the load-bearing palette — navy for structure and trust, gold for value and action
 - Bold uppercase Noto Sans display type for identity moments; the same sans at compact working sizes for everything else — dense, ledger-like rhythm
 - Card BG (#f7f6f4), a barely-there near-white tint, as the everyday surface for sections and cards — enough separation from the page to read as a distinct surface, without reading as a color block; Platinum (#e5e4e2) steps in as the deeper neutral for emphasis moments (icon wells, quick-action tiles)
-- A 10px radius as the default component shape — softened from the earlier 4px "sharp ledger" corner, still structured rather than pill-soft
-- Shadows used sparingly and quietly — never a decorative flourish
+- A 16px radius as the default component shape — softened again from the earlier 10px step for a more modern, premium feel, still structured rather than pill-soft
+- A visible card-lift shadow (10% opacity navy, 16px blur, 8px vertical offset) separates cards from the page — quiet but no longer barely-there
+- Dark mode is built off the brand's own navy hue rather than a generic slate ramp, with three distinct surface steps (page < card < elevated sheet) for real depth
 
 ## 2. Colors
 
@@ -160,8 +161,8 @@ Two-color core (navy + gold) doing almost all of the work, backed by a quiet pla
 - **Display** (bold 700, 36px / 42px line-height): Full-screen brand statements — the welcome screen's "BEYOND FACTORY GATES." Always uppercase, always short (one word per line).
 - **Headline** (bold 700, 26px / 32px): Screen-level headings, e.g. "HOW WILL YOU USE ZYNTRA?" Uppercase, two-tone (navy + gold word) is the signature pattern.
 - **Title** (bold 700, 16px / 22px): Card and section titles (role card title, product name at larger sizes).
-- **Body** (regular 400, 13px / 20px): Default reading copy — descriptions, subtitles, form values. Cap at ~65-75ch when body text runs in a paragraph.
-- **Label** (semiBold 600, 12px / 17px): Form labels, chip text, small UI labels. 11px is the absolute floor for readable text.
+- **Body** (regular 400, 14px / 21px): Default reading copy — descriptions, subtitles, form values. Cap at ~65-75ch when body text runs in a paragraph.
+- **Label** (semiBold 600, 13px / 18px): Form labels, chip text, small UI labels. 11px is the absolute floor for readable text.
 
 ### Named Rules
 **The Uppercase Declaration Rule.** Bold uppercase type is reserved for identity moments — welcome screens, role/section headlines — never for body copy or buttons beyond a short label. Overusing it flattens its impact.
@@ -174,7 +175,7 @@ The tab bar sits on the plain screen background (white), separated from content 
 **Quiet lift.** Zyntra is not a flat system, but its shadows are ambient rather than decorative: a single soft shadow (7% opacity navy, 14px blur, 4px vertical offset) lifts cards just enough to separate them from the page, without ever reading as a "floating panel." Depth signals content grouping, not hierarchy of importance — importance is carried by color and type weight instead.
 
 ### Shadow Vocabulary
-- **Card lift** (`shadowColor: #0f2643, shadowOpacity: 0.07, shadowRadius: 14, shadowOffset: {0, 4}, elevation: 2`): the only shadow in the system. Used on product cards and equivalent grouped-content surfaces.
+- **Card lift** (`shadowColor: #0f2643, shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: {0, 8}, elevation: 4`): the only shadow in the system. Used on product cards and equivalent grouped-content surfaces.
 
 ### Named Rules
 **The One Shadow Rule.** There is exactly one elevation value in this system. Don't introduce a second, heavier shadow for "more important" cards — importance is a color/type problem, not a depth problem.
@@ -184,24 +185,24 @@ The tab bar sits on the plain screen background (white), separated from content 
 Components are solid and deliberate: full-bleed navy or gold fills, a consistently soft 10px radius (not sharp, not pill), 1.5px borders where borders appear at all. Control heights run one step tighter than a default mobile kit (50px buttons, 46px fields, 34px chips) for a dense but fluid working rhythm — all still comfortably above the 44pt touch floor for primary controls. The one intentional break from the default radius is the accent CTA button, which goes fully pill-shaped (29px radius) to mark it as the single most important action on a screen.
 
 ### Buttons
-- **Shape:** 10px radius (`rounded.sm`) by default; the accent variant is a full pill (29px radius) — reserved for the single primary CTA on a screen (e.g. "Get Started").
+- **Shape:** 16px radius (`rounded.sm`) by default; the accent variant is a full pill (29px radius) — reserved for the single primary CTA on a screen (e.g. "Get Started").
 - **Primary:** navy fill (#0f2743), white label, 50px height.
 - **Accent:** gold fill (#eaaa34), navy label, pill radius, 50px height. Use for the one CTA that matters most on the screen.
 - **Outline:** white fill, 1.5px hairline border (#d9d8d5), primary-ink label. Use for secondary actions alongside a primary/accent button.
 - **States:** disabled = 0.5 opacity; pressed = 0.85 opacity. No color-shift hover states (touch-first platform).
 
 ### Chips
-- **Style:** 10px radius, 1.5px border, 34px height, horizontal padding 16px.
+- **Style:** 16px radius, 1.5px border, 34px height, horizontal padding 16px.
 - **State:** active = navy fill / white text; inactive = white fill / ink-primary text with hairline border. Gold stays reserved for the single most important action/value on a screen.
 
 ### Cards
-- **Corner style:** 10px radius (14px for larger sheet-style surfaces, e.g. the bottom-sheet product detail panel).
+- **Corner style:** 16px radius (22px for larger sheet-style surfaces, e.g. the bottom-sheet product detail panel).
 - **Background:** Card BG (#f7f6f4) for product/role/section cards on white screens — quiet enough to separate from the page without reading as a color block. Platinum (#e5e4e2) is reserved for emphasis elements sitting inside a card (icon wells, quick-action tiles), not the card surface itself.
 - **Shadow strategy:** the single "Card lift" shadow (see Elevation) on product cards; role-selection cards use a border state instead of a shadow to show selection (gold 1.5px border when active).
 - **Internal padding:** 8–12px (compact product/list cards) up to 16px (role cards, cart summary). Padding above ~16px reads as bloat at this density — resist stretching cards for "breathing room."
 
 ### Inputs / Fields
-- **Style:** Off White fill (#f2f1ef), 1.5px hairline border, 10px radius, 46px height (92px for multiline).
+- **Style:** Off White fill (#f2f1ef), 1.5px hairline border, 22px radius, 54px height (multiline scales with content).
 - **Focus/Error:** error state swaps the border to Error red (#d64545); no distinct focus-ring treatment currently — border-color is the only state signal besides content.
 - **Icons:** left icon slot and a right-aligned secure-entry toggle (eye/eye-slash, using muted/gold icon colors) are built into the field, not bolted on separately.
 
@@ -217,7 +218,7 @@ Components are solid and deliberate: full-bleed navy or gold fills, a consistent
 ### Do:
 - **Do** keep the palette to navy + gold as the only two brand colors; everything else is neutral or semantic (see The Two-Color Rule).
 - **Do** use Card BG (#f7f6f4) as the one surface color for cards and grouped sections; don't invent per-screen surface tints. Reserve platinum for emphasis elements inside a surface, not the surface itself.
-- **Do** use the 10px radius as the default component shape; save the pill radius for the one accent CTA per screen.
+- **Do** use the 16px radius as the default component shape; save the pill radius for the one accent CTA per screen.
 - **Do** use bold uppercase type only for identity-level headlines, not body copy or routine buttons (The Uppercase Declaration Rule).
 - **Do** keep elevation to the single quiet card-lift shadow; signal importance through color/type, not deeper shadows (The One Shadow Rule).
 - **Do** meet WCAG AA contrast (≥4.5:1 body, ≥3:1 large text) and ≥44×44pt touch targets, per PRODUCT.md's accessibility commitment.

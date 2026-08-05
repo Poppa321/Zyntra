@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError, create, isAxiosError } from "axios";
 import { Platform } from "react-native";
 
 import type { ApiErrorBody } from "@/api/types";
@@ -14,17 +14,19 @@ const webTokenStore = new Map<string, string>();
 
 // expo-secure-store has no web implementation and calls requireNativeModule()
 // as soon as it's imported, so it must be lazy-required only on native platforms
-// rather than imported at module scope.
+// rather than imported at module scope. Using require here is intentional.
 function getSecureStore(): typeof import("expo-secure-store") {
+  // Intentionally using require to avoid importing native-only module on web.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require("expo-secure-store");
 }
 
-async function getStoredToken(key: string) {
+export async function getStoredToken(key: string) {
   if (Platform.OS === "web") return webTokenStore.get(key) ?? null;
   return getSecureStore().getItemAsync(key);
 }
 
-async function writeStoredToken(key: string, value: string | null) {
+export async function writeStoredToken(key: string, value: string | null) {
   if (Platform.OS === "web") {
     if (value) webTokenStore.set(key, value);
     else webTokenStore.delete(key);
@@ -34,7 +36,7 @@ async function writeStoredToken(key: string, value: string | null) {
   else await getSecureStore().deleteItemAsync(key);
 }
 
-export const apiClient = axios.create({
+export const apiClient = create({
   baseURL: API_BASE_URL,
   timeout: 15000,
   headers: {
@@ -50,8 +52,11 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
-export function getApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
-  if (axios.isAxiosError(error)) {
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong",
+): string {
+  if (isAxiosError(error)) {
     const body = (error as AxiosError<ApiErrorBody>).response?.data;
     return body?.message ?? fallback;
   }
@@ -60,7 +65,7 @@ export function getApiErrorMessage(error: unknown, fallback = "Something went wr
 }
 
 export function getApiErrorCode(error: unknown): string | undefined {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     return (error as AxiosError<ApiErrorBody>).response?.data?.code;
   }
   return undefined;
