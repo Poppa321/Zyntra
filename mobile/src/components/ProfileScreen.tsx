@@ -80,11 +80,14 @@ export function ProfileScreen({ name, roleLabel }: ProfileScreenProps) {
       <StatusBar style={isDark ? "light" : "dark"} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <View style={styles.avatar}>
+          <Pressable
+            onPress={() => router.push("/profile/business")}
+            style={({ pressed }) => [styles.avatar, pressed && { opacity: 0.85 }]}
+          >
             <Text weight="extraBold" style={styles.avatarInitial}>
               {initial}
             </Text>
-          </View>
+          </Pressable>
           <Text weight="extraBold" style={styles.name}>
             {name}
           </Text>

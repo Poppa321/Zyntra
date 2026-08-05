@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Image } from "expo-image";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -15,6 +16,8 @@ import { useTrustScoreQuery } from "@/hooks/useManufacturer";
 import { useManufacturerProductsQuery } from "@/hooks/useProducts";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
+
+const coverPhoto = require("@/../assets/images/auth/warehouse-team.jpg");
 
 export default function ManufacturerProfile() {
   const params = useLocalSearchParams<{
@@ -59,6 +62,13 @@ export default function ManufacturerProfile() {
         ListHeaderComponent={
           <>
           <View style={styles.hero}>
+            <Image
+              source={coverPhoto}
+              style={StyleSheet.absoluteFill}
+              contentFit="cover"
+              transition={150}
+            />
+            <View style={styles.heroOverlay} />
             <IconButton
               icon={<CaretLeft size={18} color={colors.pureWhite} weight="bold" />}
               background="rgba(255,255,255,0.15)"
@@ -189,6 +199,8 @@ export default function ManufacturerProfile() {
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
   hero: {
+    position: "relative",
+    overflow: "hidden",
     backgroundColor: colors.navy,
     paddingTop: 12,
     paddingHorizontal: 20,
@@ -196,6 +208,10 @@ function createStyles(colors: ThemeColors) {
     borderBottomLeftRadius: radius.md,
     borderBottomRightRadius: radius.md,
     marginBottom: 18,
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(10, 24, 41, 0.72)",
   },
   backButton: {
     marginBottom: 8,

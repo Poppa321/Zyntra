@@ -110,11 +110,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    // Fixed navy shadow tone to match this banner's always-navy background
+    // (it doesn't follow the active theme) — same shape as the system's one
+    // card-lift shadow (see theme/shadow.ts), just anchored to its own color.
+    shadowColor: "#0f2743",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 4,
     borderWidth: 1,
     borderColor: "rgba(234, 170, 52, 0.3)",
   },

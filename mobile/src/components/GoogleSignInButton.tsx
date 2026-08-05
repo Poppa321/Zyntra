@@ -5,6 +5,7 @@ import Svg, { Path } from "react-native-svg";
 import type { Role } from "@/api/types";
 import { useGoogleSignIn, type GoogleSignInResult } from "@/lib/googleAuth";
 import { radius } from "@/theme/spacing";
+import { cardShadow } from "@/theme/shadow";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 
@@ -90,11 +91,7 @@ function createStyles(colors: ThemeColors) {
       alignItems: "center",
       justifyContent: "center",
       gap: 12,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.09,
-      shadowRadius: 14,
-      elevation: 3,
+      ...cardShadow(colors),
     },
     pressed: {
       transform: [{ scale: 0.97 }],

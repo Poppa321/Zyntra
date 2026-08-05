@@ -1,62 +1,31 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Check, Package, PencilSimple, Plus, Rocket, X } from "phosphor-react-native";
+import { CaretRight, Package, Plus } from "phosphor-react-native";
 
-import { getApiErrorMessage } from "@/api/client";
-import { showAlert } from "@/lib/alert";
 import { Badge } from "@/components/Badge";
 import { ProductThumb } from "@/components/ProductThumb";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Text } from "@/components/Text";
-import { TextField } from "@/components/TextField";
-import { useInventoryQuery, useUpdateStockMutation } from "@/hooks/useInventory";
+import { useInventoryQuery } from "@/hooks/useInventory";
 import type { InventoryItem } from "@/types/domain";
 import { type ThemeColors, useTheme, useThemeColors } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
 
 export default function Inventory() {
   const { data } = useInventoryQuery();
-  const updateStock = useUpdateStockMutation();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [draftQty, setDraftQty] = useState("");
   const { isDark } = useTheme();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  function startEdit(item: InventoryItem) {
-    setEditingId(item.id);
-    setDraftQty(String(item.stockQty));
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-    setDraftQty("");
-  }
-
-  function saveEdit(item: InventoryItem) {
-    const parsed = Number(draftQty);
-    if (!Number.isFinite(parsed) || parsed < 0 || !Number.isInteger(parsed)) {
-      showAlert("Invalid quantity", "Enter a whole number of 0 or more.");
-      return;
-    }
-    updateStock.mutate(
-      { id: item.id, stockQty: parsed },
-      {
-        onSuccess: () => cancelEdit(),
-        onError: (error) => showAlert("Couldn't update stock", getApiErrorMessage(error)),
-      },
-    );
-  }
-
   function renderItem({ item }: { item: InventoryItem }) {
-    const isEditing = editingId === item.id;
-    const isSaving = isEditing && updateStock.isPending;
-
     return (
-      <View style={[styles.card, item.low && styles.cardLow]}>
-        <ProductThumb size={60} iconSize={22} />
+      <Pressable
+        onPress={() => router.push({ pathname: "/inventory-item/[id]", params: { id: item.id } })}
+        style={({ pressed }) => [styles.card, item.low && styles.cardLow, pressed && styles.cardPressed]}
+      >
+        <ProductThumb uri={item.imageUrl} size={60} iconSize={22} />
         <View style={styles.info}>
           <Text weight="bold" style={styles.name} numberOfLines={1}>
             {item.name}
@@ -64,60 +33,22 @@ export default function Inventory() {
           <Text weight="regular" style={styles.sku}>
             {item.sku}
           </Text>
-          {isEditing ? (
-            <TextField
-              value={draftQty}
-              onChangeText={setDraftQty}
-              keyboardType="number-pad"
-              placeholder="Stock quantity"
-              autoFocus
-            />
-          ) : (
-            <Text
-              weight="extraBold"
-              color={item.low ? colors.textPrimary : colors.success}
-              style={styles.units}
-            >
-              {item.units}
-            </Text>
-          )}
+          <Text
+            weight="extraBold"
+            color={item.low ? colors.textPrimary : colors.success}
+            style={styles.units}
+          >
+            {item.units}
+          </Text>
         </View>
         <View style={styles.actions}>
           <View style={styles.badgeRow}>
             {item.featured && <Badge label="FEATURED" variant="gold" />}
-            {item.low && !isEditing && <Badge label="LOW" variant="gold" />}
+            {item.low && <Badge label="LOW" variant="gold" />}
           </View>
-          {!isEditing && !item.featured && (
-            <Pressable
-              hitSlop={8}
-              onPress={() => router.push({ pathname: "/boost/[id]", params: { id: item.id, name: item.name } })}
-              style={styles.boostButton}
-            >
-              <Rocket size={13} color={colors.textPrimary} />
-              <Text weight="semiBold" style={styles.boost}>
-                Feature
-              </Text>
-            </Pressable>
-          )}
-          {isEditing ? (
-            <View style={styles.editActions}>
-              <Pressable hitSlop={8} onPress={cancelEdit} disabled={isSaving} style={styles.editIconButton}>
-                <X size={15} color={colors.textMuted} weight="bold" />
-              </Pressable>
-              <Pressable hitSlop={8} onPress={() => saveEdit(item)} disabled={isSaving} style={styles.editIconButton}>
-                <Check size={15} color={colors.success} weight="bold" />
-              </Pressable>
-            </View>
-          ) : (
-            <Pressable hitSlop={8} onPress={() => startEdit(item)} style={styles.editButton}>
-              <PencilSimple size={13} color={colors.textPrimary} />
-              <Text weight="semiBold" style={styles.edit}>
-                Edit
-              </Text>
-            </Pressable>
-          )}
+          <CaretRight size={16} color={colors.textFaint} weight="bold" />
         </View>
-      </View>
+      </Pressable>
     );
   }
 
@@ -198,6 +129,7 @@ function createStyles(colors: ThemeColors) {
   },
   card: {
     flexDirection: "row",
+    alignItems: "center",
     borderRadius: radius.card,
     backgroundColor: colors.cardBg,
     padding: 12,
@@ -206,6 +138,9 @@ function createStyles(colors: ThemeColors) {
   cardLow: {
     borderWidth: 2,
     borderColor: colors.gold,
+  },
+  cardPressed: {
+    opacity: 0.85,
   },
   info: {
     flex: 1,
@@ -225,42 +160,11 @@ function createStyles(colors: ThemeColors) {
   },
   actions: {
     alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: 6,
+    gap: 8,
   },
   badgeRow: {
     alignItems: "flex-end",
     gap: 6,
-  },
-  boostButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  boost: {
-    fontSize: 12,
-    color: colors.textPrimary,
-  },
-  editButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  edit: {
-    fontSize: 12,
-    color: colors.textPrimary,
-  },
-  editActions: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  editIconButton: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
   },
   emptyWrap: {
     flex: 1,

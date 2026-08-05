@@ -16,11 +16,13 @@ type AuthShellProps = {
   /** The word within `title` to render in gold — the two-tone header accent. Falls back to the last word when omitted. */
   accentWord?: string;
   subtitle: string;
+  /** Optional badge rendered above the title — e.g. a role icon on registration, so the chosen role stays visible while filling the form. */
+  icon?: ReactNode;
   children: ReactNode;
   showBack?: boolean;
 };
 
-export function AuthShell({ title, accentWord, subtitle, children, showBack }: AuthShellProps) {
+export function AuthShell({ title, accentWord, subtitle, icon, children, showBack }: AuthShellProps) {
   const insets = useSafeAreaInsets();
   const themeColors = useThemeColors();
   const styles = useMemo(() => createStyles(themeColors), [themeColors]);
@@ -47,6 +49,7 @@ export function AuthShell({ title, accentWord, subtitle, children, showBack }: A
           </Pressable>
         )}
         <Logo variant="dark" size="md" style={styles.logo} />
+        {icon && <View style={styles.iconSlot}>{icon}</View>}
         <Text weight="extraBold" style={styles.title}>
           {words.map((word, i) => (
             <Text
@@ -109,6 +112,9 @@ function createStyles(themeColors: ThemeColors) {
     },
     logo: {
       marginBottom: 18,
+    },
+    iconSlot: {
+      marginBottom: 14,
     },
     title: {
       fontSize: 29,

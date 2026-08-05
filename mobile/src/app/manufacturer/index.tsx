@@ -12,7 +12,6 @@ import {
   PlusCircle,
   TrendUp,
   UsersThree,
-  Warning,
 } from "phosphor-react-native";
 
 import { IconButton } from "@/components/IconButton";
@@ -24,18 +23,11 @@ import { useNotificationsQuery } from "@/hooks/useNotifications";
 import { radius } from "@/theme/spacing";
 import { type ThemeColors, useTheme } from "@/theme/ThemeContext";
 
-const dashboardHero = require("@/../assets/images/auth/welcome-bg.jpg");
+const dashboardHero = require("@/../assets/images/auth/manufacturer-hero.jpg");
 
 export default function ManufacturerDashboard() {
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  // The low-stock warning banner uses a soft pastel amber tint tuned for a
-  // light card surface — on a dark surface that same pastel reads washed out
-  // and fails contrast, so dark mode swaps in a deep desaturated amber with a
-  // brighter foreground (same treatment as Badge's "warning" variant).
-  const warningColors = isDark
-    ? { bg: "#3a2c10", icon: "#f0b429", title: "#f0b429", subtitle: "#d1a34f" }
-    : { bg: "#fff2db", icon: "#ad730f", title: "#ad730f", subtitle: "#997326" };
   const { data } = useDashboardQuery();
   const { data: activePools } = useManufacturerPoolsQuery();
   const { data: notifications } = useNotificationsQuery();
@@ -86,27 +78,6 @@ export default function ManufacturerDashboard() {
       label: "Messages",
       icon: ChatCircleText,
       onPress: () => router.push("/manufacturer/messages"),
-    },
-  ];
-
-  const insightCards = [
-    {
-      value: String(data.inquiryCount),
-      label: "New inquiries",
-      icon: ChatCircleText,
-      onPress: () => router.push("/manufacturer/messages"),
-    },
-    {
-      value: String(data.lowStockCount),
-      label: "Low stock",
-      icon: Warning,
-      onPress: () => router.push("/manufacturer/inventory"),
-    },
-    {
-      value: String(data.productCount),
-      label: "Active products",
-      icon: Package,
-      onPress: () => router.push("/manufacturer/inventory"),
     },
   ];
 
@@ -190,60 +161,6 @@ export default function ManufacturerDashboard() {
           </View>
         </View>
 
-        <View style={styles.insightRow}>
-          {insightCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <Pressable
-                key={card.label}
-                onPress={card.onPress}
-                style={({ pressed }) => [
-                  styles.insightCard,
-                  pressed && styles.insightCardPressed,
-                ]}
-              >
-                <View style={styles.insightIcon}>
-                  <Icon size={16} color={colors.gold} weight="bold" />
-                </View>
-                <Text weight="extraBold" style={styles.insightValue}>
-                  {card.value}
-                </Text>
-                <Text
-                  weight="medium"
-                  color={colors.textMuted}
-                  style={styles.insightLabel}
-                >
-                  {card.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View style={styles.quickActionsRow}>
-          {quickActions.map((action) => (
-            <Pressable
-              key={action.label}
-              onPress={action.onPress}
-              style={({ pressed }) => [
-                styles.quickAction,
-                pressed && styles.quickActionPressed,
-              ]}
-            >
-              <View style={styles.quickActionIcon}>
-                <action.icon size={19} color={colors.gold} weight="bold" />
-              </View>
-              <Text
-                weight="semiBold"
-                style={styles.quickActionLabel}
-                numberOfLines={1}
-              >
-                {action.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
         <View style={styles.ledgerStrip}>
           <Pressable
             onPress={ledgerStats[0].onPress}
@@ -298,36 +215,29 @@ export default function ManufacturerDashboard() {
           ))}
         </View>
 
-        {data.lowStockCount > 0 && (
-          <Pressable
-            onPress={() => router.push("/manufacturer/inventory")}
-            style={({ pressed }) => [
-              styles.warningBanner,
-              { backgroundColor: warningColors.bg },
-              pressed && styles.ledgerPressed,
-            ]}
-          >
-            <View style={styles.warningTitleRow}>
-              <Warning size={16} color={warningColors.icon} weight="fill" />
-              <Text
-                weight="bold"
-                color={warningColors.title}
-                style={styles.warningTitle}
-              >
-                {data.lowStockCount} products low on stock
-              </Text>
-              <View style={styles.warningSpacer} />
-              <CaretRight size={14} color={warningColors.icon} weight="bold" />
-            </View>
-            <Text
-              weight="regular"
-              color={warningColors.subtitle}
-              style={styles.warningSubtitle}
+        <View style={styles.quickActionsRow}>
+          {quickActions.map((action) => (
+            <Pressable
+              key={action.label}
+              onPress={action.onPress}
+              style={({ pressed }) => [
+                styles.quickAction,
+                pressed && styles.quickActionPressed,
+              ]}
             >
-              {data.lowStockProductNames.join(" · ")}
-            </Text>
-          </Pressable>
-        )}
+              <View style={styles.quickActionIcon}>
+                <action.icon size={19} color={colors.gold} weight="bold" />
+              </View>
+              <Text
+                weight="semiBold"
+                style={styles.quickActionLabel}
+                numberOfLines={1}
+              >
+                {action.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
         {activePools.length > 0 && (
           <>
@@ -426,16 +336,16 @@ function createStyles(colors: ThemeColors) {
     hero: {
       position: "relative",
       backgroundColor: colors.navyDark,
-      paddingHorizontal: 18,
-      paddingTop: 24,
-      paddingBottom: 26,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 12,
       borderBottomLeftRadius: radius.md,
       borderBottomRightRadius: radius.md,
       overflow: "hidden",
     },
     heroOverlay: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: "rgba(10, 24, 41, 0.58)",
+      backgroundColor: "rgba(10, 24, 41, 0.62)",
     },
     heroTopRow: {
       flexDirection: "row",
@@ -465,14 +375,14 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.navyDark,
     },
     balanceLabel: {
-      marginTop: 20,
+      marginTop: 12,
       fontSize: 12,
     },
     balanceCard: {
-      marginTop: 20,
+      marginTop: 12,
       backgroundColor: "rgba(255,255,255,0.08)",
       borderRadius: radius.card,
-      padding: 16,
+      padding: 12,
       borderWidth: 1,
       borderColor: "rgba(255,255,255,0.12)",
     },
@@ -502,72 +412,11 @@ function createStyles(colors: ThemeColors) {
       marginTop: 2,
       fontSize: 13,
     },
-    heroStatsRow: {
-      marginTop: 20,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    heroStat: {
-      flex: 1,
-      gap: 2,
-    },
-    heroStatValue: {
-      fontSize: 18,
-      color: colors.pureWhite,
-    },
-    heroStatLabel: {
-      fontSize: 11,
-    },
-    heroStatDivider: {
-      width: 1,
-      height: 30,
-      backgroundColor: "rgba(255,255,255,0.12)",
-      marginHorizontal: 16,
-    },
     quickActionsRow: {
       flexDirection: "row",
       gap: 8,
       paddingHorizontal: 16,
-      marginTop: 18,
-    },
-    insightRow: {
-      flexDirection: "row",
-      gap: 10,
-      paddingHorizontal: 16,
-      marginTop: 16,
-    },
-    insightCard: {
-      flex: 1,
-      borderRadius: radius.card,
-      backgroundColor: colors.white,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: colors.border,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.05,
-      shadowRadius: 16,
-      elevation: 3,
-    },
-    insightCardPressed: {
-      opacity: 0.85,
-    },
-    insightIcon: {
-      width: 34,
-      height: 34,
-      borderRadius: 12,
-      backgroundColor: colors.accentTint,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 12,
-    },
-    insightValue: {
-      fontSize: 18,
-      color: colors.textPrimary,
-    },
-    insightLabel: {
-      marginTop: 6,
-      fontSize: 11,
+      marginTop: 12,
     },
     quickAction: {
       flex: 1,
@@ -602,7 +451,7 @@ function createStyles(colors: ThemeColors) {
       flexDirection: "row",
       gap: 8,
       paddingHorizontal: 16,
-      marginTop: 14,
+      marginTop: 12,
     },
     ledgerPressed: {
       opacity: 0.85,
@@ -645,29 +494,8 @@ function createStyles(colors: ThemeColors) {
       flex: 1,
       fontSize: 11,
     },
-    warningBanner: {
-      marginHorizontal: 16,
-      marginTop: 12,
-      borderRadius: radius.card,
-      padding: 10,
-    },
-    warningTitleRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
-    warningTitle: {
-      fontSize: 13,
-    },
-    warningSpacer: {
-      flex: 1,
-    },
-    warningSubtitle: {
-      marginTop: 8,
-      fontSize: 11,
-    },
     sectionHeaderRow: {
-      marginTop: 20,
+      marginTop: 12,
       marginHorizontal: 16,
       flexDirection: "row",
       alignItems: "center",
@@ -681,7 +509,7 @@ function createStyles(colors: ThemeColors) {
       fontSize: 12,
     },
     ordersList: {
-      marginTop: 10,
+      marginTop: 8,
       marginHorizontal: 16,
       gap: 2,
       borderRadius: radius.card,

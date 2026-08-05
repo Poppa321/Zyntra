@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
+import { Factory, Truck } from "phosphor-react-native";
 
 import { getApiErrorMessage } from "@/api/client";
 import { showAlert } from "@/lib/alert";
@@ -11,10 +12,13 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Text } from "@/components/Text";
 import { TextField } from "@/components/TextField";
 import { useRegisterMutation } from "@/hooks/useAuth";
+import { radius } from "@/theme/spacing";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 
 export default function Register() {
   const { role } = useLocalSearchParams<{ role?: string }>();
+  const isDistributor = role === "distributor";
+  const RoleIcon = isDistributor ? Truck : Factory;
 
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -60,9 +64,14 @@ export default function Register() {
     <AuthShell
       title="Create your account"
       subtitle={
-        role === "distributor"
+        isDistributor
           ? "Join as a distributor and start ordering"
           : "Join as a manufacturer and start selling"
+      }
+      icon={
+        <View style={[styles.roleIconWell, { backgroundColor: isDistributor ? colors.goldDark : colors.navy }]}>
+          <RoleIcon size={26} color={colors.pureWhite} weight="fill" />
+        </View>
       }
       showBack
     >
@@ -148,6 +157,13 @@ function createStyles(colors: ThemeColors) {
     },
     footerText: {
       fontSize: 15,
+    },
+    roleIconWell: {
+      width: 52,
+      height: 52,
+      borderRadius: radius.pill,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
 }

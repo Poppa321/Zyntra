@@ -68,3 +68,4 @@ zyntra/
   backend/     Spring Boot REST API (see backend/README.md for full package/API reference)
   mobile/      Expo/React Native app (see mobile/README.md for full screen/feature reference)
 ```
+ 

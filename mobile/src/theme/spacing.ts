@@ -7,15 +7,15 @@ export const spacing = {
   xxl: 32,
 } as const;
 
-// Bumped again for a more modern, premium feel — softer 16/22px scale.
-// Circular avatars/icon buttons are sized to half their own diameter and
-// are NOT driven by these tokens.
+// Unified at 14 across the board — one corner radius for the whole site
+// (buttons, inputs, chips, hero banners, cards) rather than a stepped scale.
+// `pill` stays a distinct shape (fully rounded), reserved for the one accent
+// CTA per screen — not part of this radius scale. Circular avatars/icon
+// buttons are sized to half their own diameter and are NOT driven by these
+// tokens either.
 export const radius = {
-  sm: 16,
-  md: 22,
+  sm: 14,
+  md: 14,
   pill: 999,
-  // Cards are capped sharper than interactive elements (buttons, inputs) —
-  // a deliberate "ledger" contrast, not an oversight; don't reuse this for
-  // non-card surfaces.
-  card: 26,
+  card: 14,
 } as const;

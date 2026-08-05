@@ -92,32 +92,33 @@ export default function IncomingOrders() {
     return (
       <View style={styles.card}>
         <View style={styles.topRow}>
-          <Text weight="extraBold" style={styles.orderId}>
-            #{order.id}
+          <Text weight="bold" style={styles.summary} numberOfLines={2}>
+            {order.summary}
+          </Text>
+          {isNew && <Badge label="NEW" variant="gold" />}
+        </View>
+        <Text
+          weight="medium"
+          color={colors.textMuted}
+          style={styles.customer}
+          numberOfLines={1}
+        >
+          {order.customer} · {order.location}
+        </Text>
+
+        <View style={styles.metaRow}>
+          <Text weight="medium" color={colors.textFaint} style={styles.orderRef}>
+            Order #{order.id}
           </Text>
           <View style={styles.topRowRight}>
             <Text weight="extraBold" color={colors.gold} style={styles.total}>
               {order.total}
             </Text>
             <Pressable hitSlop={10} onPress={() => handleMessage(order)}>
-              <ChatCircleText size={22} color={colors.textMuted} />
+              <ChatCircleText size={20} color={colors.textMuted} />
             </Pressable>
           </View>
         </View>
-        <View style={styles.metaRow}>
-          <Text
-            weight="medium"
-            color={colors.textMuted}
-            style={styles.customer}
-            numberOfLines={1}
-          >
-            {order.customer} · {order.location}
-          </Text>
-          {isNew && <Badge label="NEW" variant="gold" />}
-        </View>
-        <Text weight="regular" color={colors.textMuted} style={styles.summary}>
-          {order.summary}
-        </Text>
 
         <View style={styles.actionsRow}>
           {action && (
@@ -240,45 +241,48 @@ function createStyles(colors: ThemeColors) {
       color: colors.textPrimary,
     },
     card: {
-      backgroundColor: colors.accentTint,
+      backgroundColor: colors.cardBg,
       borderRadius: radius.card,
-      padding: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 12,
     },
     topRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "space-between",
-    },
-    orderId: {
-      fontSize: 13,
-      color: colors.textPrimary,
+      gap: 8,
     },
     topRowRight: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 8,
+      gap: 10,
     },
     metaRow: {
-      marginTop: 2,
+      marginTop: 8,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 8,
     },
     customer: {
-      flex: 1,
-      fontSize: 11,
+      marginTop: 3,
+      fontSize: 12,
     },
     summary: {
-      marginTop: 1,
-      fontSize: 13,
-      fontWeight: "bold",
+      flex: 1,
+      fontSize: 15,
+      lineHeight: 20,
+      color: colors.textPrimary,
+    },
+    orderRef: {
+      fontSize: 10,
     },
     total: {
-      fontSize: 19,
+      fontSize: 16,
     },
     actionsRow: {
-      marginTop: 6,
+      marginTop: 10,
       flexDirection: "row",
       alignItems: "center",
       gap: 12,

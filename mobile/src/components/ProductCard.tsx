@@ -67,16 +67,8 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
       flex: 1,
-      borderRadius: radius.card,
       padding: 12,
       backgroundColor: colors.cardBg,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.1,
-      shadowRadius: 16,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: colors.border,
       margin: 4,
     },
     thumbWrap: {

@@ -19,8 +19,9 @@ import {
   useThemeColors,
 } from "@/theme/ThemeContext";
 import { radius } from "@/theme/spacing";
+import { cardShadow } from "@/theme/shadow";
 
-const roleHero = require("@/../assets/images/auth/welcome-bg.jpg");
+const roleHero = require("@/../assets/images/auth/courier-loading.jpg");
 
 type Role = "manufacturer" | "distributor";
 
@@ -249,11 +250,7 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
       backgroundColor: colors.cardBg,
       padding: 18,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.05,
-      shadowRadius: 18,
-      elevation: 4,
+      ...cardShadow(colors),
     },
     cardActive: {
       borderColor: colors.gold,
@@ -331,11 +328,7 @@ function createStyles(colors: ThemeColors) {
       borderColor: colors.border,
       backgroundColor: colors.white,
       padding: 14,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.04,
-      shadowRadius: 16,
-      elevation: 3,
+      ...cardShadow(colors),
     },
     featureTitle: {
       fontSize: 14,

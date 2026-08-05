@@ -167,6 +167,7 @@ export function mapInventoryItem(dto: ProductDetailDto): InventoryItem {
     stockQty: dto.stockQty,
     low: dto.stockQty <= dto.lowStockThreshold,
     featured: dto.featured,
+    imageUrl: dto.imageUrl,
   };
 }
 

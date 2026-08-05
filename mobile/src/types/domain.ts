@@ -96,6 +96,7 @@ export type InventoryItem = {
   stockQty: number;
   low: boolean;
   featured: boolean;
+  imageUrl?: string;
 };
 
 export type NotificationType = "order" | "inventory" | "system" | "promo";

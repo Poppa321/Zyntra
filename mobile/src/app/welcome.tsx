@@ -21,12 +21,13 @@ import { Text } from "@/components/Text";
 import { colors } from "@/theme/colors";
 import { radius } from "@/theme/spacing";
 
-const welcomeBg = require("@/../assets/images/auth/welcome-bg.jpg");
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Each slide is a full screen of its own — its own icon and tint over the
-// shared hero photo — rather than a single static hero with a text pager
-// underneath, so onboarding actually reads as a sequence of screens.
+// Each slide is a full screen of its own — its own icon, photo, and tint —
+// rather than a single static hero with a text pager underneath, so
+// onboarding actually reads as a sequence of screens with a matching image
+// per idea (factory floor, the delivery leg, the handoff that closes a
+// trade) instead of one photo recolored three times.
 const SLIDES = [
   {
     icon: Storefront,
@@ -34,6 +35,7 @@ const SLIDES = [
     highlight: "FACTORY",
     subtitle: "GATES",
     desc: "Wholesale trade between manufacturers and distributors — direct, tracked, trusted.",
+    image: require("@/../assets/images/auth/warehouse-team.jpg"),
     tint: ["rgba(12,30,49,0.78)", "rgba(15,39,67,0.55)", "rgba(8,15,26,0.9)"] as const,
   },
   {
@@ -42,6 +44,7 @@ const SLIDES = [
     highlight: "LOGISTICS",
     subtitle: "TRACKING",
     desc: "Track your shipments from factory gate to shelves with integrated live maps.",
+    image: require("@/../assets/images/auth/distributor-hero.jpg"),
     tint: ["rgba(209,122,61,0.55)", "rgba(15,39,67,0.6)", "rgba(8,15,26,0.9)"] as const,
   },
   {
@@ -50,6 +53,7 @@ const SLIDES = [
     highlight: "WHOLESALE",
     subtitle: "PAYMENTS",
     desc: "Grow your business using escrow-backed payments that keep every transaction safe.",
+    image: require("@/../assets/images/auth/delivery-handoff.jpg"),
     tint: ["rgba(234,170,52,0.5)", "rgba(15,39,67,0.6)", "rgba(8,15,26,0.9)"] as const,
   },
 ];
@@ -96,7 +100,7 @@ export default function Welcome() {
           const SlideIcon = item.icon;
           return (
             <View style={styles.slide}>
-              <Image source={welcomeBg} style={StyleSheet.absoluteFill} contentFit="cover" />
+              <Image source={item.image} style={StyleSheet.absoluteFill} contentFit="cover" />
               <LinearGradient colors={item.tint} locations={[0, 0.55, 1]} style={StyleSheet.absoluteFill} />
 
               <View style={[styles.slideContent, { paddingTop: insets.top + 16 }]}>

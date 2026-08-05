@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Image } from "expo-image";
 import { Factory, SealCheck, Star } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -7,6 +8,21 @@ import { radius } from "@/theme/spacing";
 import { type ThemeColors, useThemeColors } from "@/theme/ThemeContext";
 import { Text } from "@/components/Text";
 import type { Manufacturer } from "@/types/domain";
+
+// No manufacturer has an uploaded logo/photo yet (backend has no such field) —
+// until that ships, cards rotate through a small pool of factory-floor stock
+// photos, picked deterministically per manufacturer id so the same card always
+// shows the same photo instead of reshuffling on every render.
+const BANNER_PHOTOS = [
+  require("@/../assets/images/auth/manufacturer-hero.jpg"),
+  require("@/../assets/images/auth/warehouse-team.jpg"),
+];
+
+function bannerFor(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return BANNER_PHOTOS[hash % BANNER_PHOTOS.length];
+}
 
 type ManufacturerCardProps = {
   manufacturer: Manufacturer;
@@ -26,6 +42,13 @@ export function ManufacturerCard({ manufacturer, onPress }: ManufacturerCardProp
       ]}
     >
       <View style={styles.banner}>
+        <Image
+          source={bannerFor(manufacturer.id)}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          transition={150}
+        />
+        <View style={styles.bannerOverlay} />
         <Factory size={22} color={colors.pureWhite} weight="fill" />
         <View style={styles.ratingBadge}>
           <Star size={9} color={colors.navy} weight="fill" />
@@ -57,23 +80,21 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
       width: CARD_WIDTH,
-      borderRadius: radius.card,
       overflow: "hidden",
-      backgroundColor: colors.cardBg,
-      shadowColor: colors.navy,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.1,
-      shadowRadius: 16,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: colors.border,
+      backgroundColor: colors.platinum,
       margin: 4,
     },
     banner: {
       height: 64,
+      position: "relative",
+      overflow: "hidden",
       backgroundColor: colors.navy,
       alignItems: "center",
       justifyContent: "center",
+    },
+    bannerOverlay: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: "rgba(11,22,38,0.5)",
     },
     ratingBadge: {
       position: "absolute",
