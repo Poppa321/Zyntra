@@ -52,4 +52,22 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
         ORDER BY o.createdAt DESC
         """)
     List<Order> findDeliveredOrdersForProduct(@Param("distributorId") UUID distributorId, @Param("productId") UUID productId);
+
+    // Platform-wide commission summary — realized (delivered) orders only,
+    // since that's revenue actually earned rather than still in flight.
+    @Query("""
+        SELECT COALESCE(SUM(o.platformFeeAmount), 0), COALESCE(SUM(o.total), 0), COUNT(o)
+        FROM Order o
+        WHERE o.status = com.zyntra.backend.order.OrderStatus.DELIVERED
+        """)
+    Object[] sumPlatformCommission();
+
+    @Query("""
+        SELECT FUNCTION('to_char', o.createdAt, 'YYYY-MM'), COALESCE(SUM(o.platformFeeAmount), 0), COUNT(o)
+        FROM Order o
+        WHERE o.status = com.zyntra.backend.order.OrderStatus.DELIVERED
+        GROUP BY FUNCTION('to_char', o.createdAt, 'YYYY-MM')
+        ORDER BY FUNCTION('to_char', o.createdAt, 'YYYY-MM') DESC
+        """)
+    List<Object[]> sumPlatformCommissionByMonth();
 }

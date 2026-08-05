@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zyntra — Commission Dashboard</title>
+<style>
+  :root {
+    --navy: #0f2743;
+    --navy-dark: #0c1e31;
+    --gold: #eaaa34;
+    --bg: #f7f6f4;
+    --border: #d9d8d5;
+    --text-muted: #556170;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+  }
+  header {
+    background: var(--navy-dark);
+    color: #fff;
+    padding: 20px 24px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 0.3px;
+  }
+  header p {
+    margin: 4px 0 0;
+    color: rgba(255,255,255,0.62);
+    font-size: 13px;
+  }
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .key-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .key-row input {
+    flex: 1;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-size: 14px;
+  }
+  .key-row button {
+    height: 44px;
+    padding: 0 20px;
+    border-radius: 10px;
+    border: none;
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .key-row button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  #status {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: -12px 0 20px;
+  }
+  #status.error { color: #c0392b; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .stat .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .stat .value {
+    margin-top: 6px;
+    font-size: 26px;
+    font-weight: 800;
+  }
+  .stat.highlight .value { color: var(--gold); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+  }
+  tr:last-child td { border-bottom: none; }
+  #empty {
+    display: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 20px 0;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Zyntra — Platform Commission</h1>
+    <p>Delivered orders only. 5% commission on subtotal, taken at order time.</p>
+  </header>
+  <main>
+    <div class="key-row">
+      <input id="adminKey" type="password" placeholder="Admin key (X-Admin-Key)" />
+      <button id="loadBtn" onclick="load()">Load</button>
+    </div>
+    <div id="status"></div>
+
+    <div class="stats">
+      <div class="stat highlight">
+        <div class="label">Total commission</div>
+        <div class="value" id="totalCommission">—</div>
+      </div>
+      <div class="stat">
+        <div class="label">Total GMV</div>
+        <div class="value" id="totalGmv">—</div>
+      </div>
+      <div class="stat">
+        <div class="label">Delivered orders</div>
+        <div class="value" id="orderCount">—</div>
+      </div>
+      <div class="stat">
+        <div class="label">Avg. commission / order</div>
+        <div class="value" id="avgCommission">—</div>
+      </div>
+    </div>
+
+    <table id="monthlyTable">
+      <thead>
+        <tr><th>Month</th><th>Commission</th><th>Orders</th></tr>
+      </thead>
+      <tbody id="monthlyBody"></tbody>
+    </table>
+    <div id="empty">No delivered orders yet.</div>
+  </main>
+
+  <script>
+    const KEY_STORAGE = "zyntra_admin_key";
+    const money = (n) => "₵" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const savedKey = localStorage.getItem(KEY_STORAGE);
+    if (savedKey) document.getElementById("adminKey").value = savedKey;
+
+    async function load() {
+      const key = document.getElementById("adminKey").value.trim();
+      const status = document.getElementById("status");
+      const btn = document.getElementById("loadBtn");
+      status.textContent = "";
+      status.className = "";
+
+      if (!key) {
+        status.textContent = "Enter the admin key first.";
+        status.className = "error";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Loading…";
+      try {
+        const res = await fetch("/api/admin/commission-summary", {
+          headers: { "X-Admin-Key": key },
+        });
+        if (!res.ok) {
+          throw new Error(res.status === 403 ? "Wrong admin key" : `Request failed (${res.status})`);
+        }
+        const data = await res.json();
+        localStorage.setItem(KEY_STORAGE, key);
+
+        document.getElementById("totalCommission").textContent = money(data.totalCommission);
+        document.getElementById("totalGmv").textContent = money(data.totalGmv);
+        document.getElementById("orderCount").textContent = data.deliveredOrderCount.toLocaleString();
+        document.getElementById("avgCommission").textContent = money(data.avgCommissionPerOrder);
+
+        const body = document.getElementById("monthlyBody");
+        body.innerHTML = "";
+        const table = document.getElementById("monthlyTable");
+        const empty = document.getElementById("empty");
+        if (!data.monthly || data.monthly.length === 0) {
+          table.style.display = "none";
+          empty.style.display = "block";
+        } else {
+          table.style.display = "table";
+          empty.style.display = "none";
+          for (const row of data.monthly) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.month}</td><td>${money(row.commission)}</td><td>${row.orderCount}</td>`;
+            body.appendChild(tr);
+          }
+        }
+        status.textContent = "Updated " + new Date().toLocaleTimeString();
+      } catch (err) {
+        status.textContent = err.message || "Something went wrong.";
+        status.className = "error";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Load";
+      }
+    }
+
+    if (savedKey) load();
+  </script>
+</body>
+</html>

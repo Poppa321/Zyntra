@@ -3,6 +3,7 @@ package com.zyntra.backend.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zyntra.backend.auth.JwtAuthFilter;
 import com.zyntra.backend.common.ApiError;
+import com.zyntra.backend.common.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,7 +36,10 @@ public class SecurityConfig {
         // Paystack's hosted checkout redirects here on completion (no auth
         // context available — it's a bare browser GET), which then forwards
         // into the app via the zyntra:// scheme. See PaymentRedirectController.
-        "/api/payments/redirect"
+        "/api/payments/redirect",
+        // Not user-auth at all — gated by its own X-Admin-Key header check
+        // inside AdminController, since there's no admin role in the product.
+        "/api/admin/**"
     };
 
     private static final String[] PUBLIC_PATHS = {
@@ -47,18 +51,22 @@ public class SecurityConfig {
         "/swagger-ui.html",
         "/swagger-ui/**",
         "/v3/api-docs/**",
-        "/ws/**"
+        "/ws/**",
+        "/actuator/health",
+        "/actuator/health/**"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final ObjectMapper objectMapper;
 
     // Comma-separated origin patterns, e.g. "https://app.zyntra.dev,https://*.zyntra.dev".
     @Value("${zyntra.cors.allowed-origins}")
     private String allowedOrigins;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter, ObjectMapper objectMapper) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.rateLimitFilter = rateLimitFilter;
         this.objectMapper = objectMapper;
     }
 
@@ -87,7 +95,8 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, ex) -> writeError(response, 401, "UNAUTHENTICATED", "Authentication required"))
                 .accessDeniedHandler((request, response, ex) -> writeError(response, 403, "FORBIDDEN", "Access denied"))
             )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rateLimitFilter, JwtAuthFilter.class);
 
         return http.build();
     }
